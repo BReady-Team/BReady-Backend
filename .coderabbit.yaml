@@ -1,0 +1,165 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+
+# 기본 설정
+language: "ko-KR"
+early_access: true
+
+tone_instructions: |
+  한국어(ko-KR)로 정중하고 협업적인 톤의 코드 리뷰를 제공합니다.
+  비판보다는 개선 방향과 근거를 중심으로 설명하며,
+  Spring Boot / JPA / 백엔드 설계 관점에서 리뷰합니다.
+
+
+# 리뷰 동작 방식
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  changed_files_summary: true
+  review_status: true
+  collapse_walkthrough: true
+  abort_on_close: true
+
+  # 리뷰 대상 경로 필터
+  path_filters:
+    include:
+      - "src/**"
+      - ".github/**"
+      - ".coderabbit.yaml"
+      - "Dockerfile"
+      - "docker-compose*.yml"
+      - "build.gradle"
+      - "settings.gradle"
+
+    exclude:
+      - "build/**"
+      - "out/**"
+      - ".gradle/**"
+      - "gradle/wrapper/**"
+      - "gradlew"
+      - "gradlew.bat"
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.svg"
+      - "**/*.lock"
+      - "**/*.md"
+
+  # 경로별 리뷰 가이드 (핵심)
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        [네이밍 규칙]
+        - 변수/메서드: camelCase
+        - 클래스/인터페이스: PascalCase
+        - 패키지명: 소문자
+
+        [레이어별 클래스 네이밍]
+        - Controller: {Domain}Controller
+        - API Interface(Swagger): {Domain}Api
+        - Service 인터페이스: {Domain}Usecase
+        - Service 구현체: {Domain}Service
+        - Repository: {Domain}Repository
+        - DTO: CreateXXRequest / CreateXXResponse
+        - SuccessCode Enum: {Domain}SuccessCode
+        - ErrorCode Enum: {Domain}ErrorCode
+        - Exception: {Domain}Exception
+
+        [메서드 네이밍 가이드]
+        - Controller: create / update / get / delete
+        - Service: 비즈니스 행위를 드러내는 동사 
+        - 조회 메서드:
+          * get: 단순 조회
+          * find: 조건 기반 조회
+          * fetch: 외부 시스템 호출
+          * load: 내부 상태 로딩
+        - 상태 판단: is / has / can
+        - 데이터 변경: create, save, update, delete/remove, register, replace
+
+        [클래스 내부 구성 순서]
+        1. static final 상수
+        2. 인스턴스 필드
+        3. 생성자
+        4. public 메서드
+        5. protected
+        6. package-private
+        7. private
+        8. 내부 클래스
+
+        [API URL 규칙]
+        - 리소스: 복수형
+        - URL: kebab-case
+        - 식별자: path variable
+        - 필터/검색: query string
+
+        [검증 책임 분리]
+        - API Layer: 형식 검증 (@Valid, @NotNull 등)
+        - Service Layer: 비즈니스 규칙 검증
+        - 중복 검증 금지
+        - 위반 시 Service Layer에서는 Custom BusinessException 사용
+
+        [Spring/JPA 주의사항]
+        - 필드 주입 금지 (생성자 주입 사용)
+        - N+1 발생 가능성 지적
+        - 트랜잭션 경계(@Transactional) 명확성 확인
+        - 조회 전용 메서드는 readOnly=true 권장
+        - Projection / fetch join / batch size 고려
+
+  # 자동 리뷰 트리거
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+      - "develop"
+    labels:
+      - "!wip"
+      - "!draft"
+      - "!skip-review"
+
+
+# 보안 / 품질 도구
+tools:
+  gitleaks:
+    enabled: true
+  yamllint:
+    enabled: true
+  actionlint:
+    enabled: true
+
+# 프레임워크 / 언어
+frameworks:
+  - "Spring Boot"
+  - "Spring Security"
+  - "JPA"
+
+java:
+  version: 21
+
+
+# 성능 / 보안 중점
+performance:
+  enabled: true
+  focus:
+    - "n+1"
+    - "query-optimization"
+    - "projection"
+    - "index-usage"
+
+security:
+  enabled: true
+  check:
+    - "auth"
+    - "jwt"
+    - "input-validation"
+
+# 채팅 / 응답 설정
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
