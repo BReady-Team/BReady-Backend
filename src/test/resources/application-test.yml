@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:bready-test;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    root: warn
