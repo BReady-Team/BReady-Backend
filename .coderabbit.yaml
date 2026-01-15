@@ -3,18 +3,9 @@
 language: "ko-KR"
 early_access: true
 
-tone_instructions: |
-  한국어(ko-KR)로 정중하고 협업적인 톤의 코드 리뷰를 제공합니다.
-  비판보다는 개선 방향과 근거를 중심으로 설명하며,
-  Spring Boot / JPA 기반 백엔드 설계 관점에서 리뷰합니다.
-  다음 사항을 중점적으로 확인합니다:
-  - Spring Boot 및 JPA 베스트 프랙티스
-  - 생성자 주입 사용 여부 (필드 주입 금지)
-  - 트랜잭션 경계(@Transactional)의 적절성
-  - N+1 쿼리 가능성
-  - Projection, fetch join, 인덱스 사용 가능성
-  - 인증/인가(JWT) 보안 취약점
-  - 입력값 검증 책임 분리 (API vs Service)
+tone_instructions: >
+  한국어로 정중하고 협업적인 톤의 코드 리뷰를 제공합니다.
+  Spring Boot/JPA 백엔드 품질 개선에 집중합니다.
 
 reviews:
   profile: "assertive"
@@ -45,48 +36,41 @@ reviews:
     - "!**/*.lock"
     - "!**/*.md"
 
-  # 코드 리뷰 기준
   path_instructions:
     - path: "src/**"
       instructions: |
-        [네이밍 규칙]
-        - 변수/메서드: camelCase
-        - 클래스/인터페이스: PascalCase
-        - 패키지명: 소문자
+        [리뷰 우선순위]
+        1) 보안/인증: JWT, 권한 체크, 입력값 검증 누락
+        2) 정합성: 트랜잭션 경계, 동시성/경합 가능성
+        3) 성능: N+1, 불필요한 쿼리/인덱스 미사용, 과도한 로딩
+        4) 설계/가독성: 계층 분리, 책임/네이밍, 예외 처리
 
-        [레이어별 네이밍]
+        [Spring / JPA 체크리스트]
+        - 필드 주입 금지, 생성자 주입 사용
+        - @Transactional 경계가 맞는지(읽기 readOnly=true 권장)
+        - N+1 가능성 지적 및 대안 제시(fetch join, batch size, projection 등)
+        - 영속성 컨텍스트/지연로딩으로 인한 예기치 않은 쿼리 여부
+        - 조회 API는 필요한 필드만(Projection/DTO)로 최소화
+        - 페이징 + fetch join 조합 주의(카운트 쿼리/중복 row)
+
+        [검증 책임 분리]
+        - API Layer: 형식 검증(@Valid, @NotNull 등)
+        - Service Layer: 비즈니스 규칙 검증(권한/상태/정합성)
+        - 중복 검증은 피하고, Service 위반은 Custom BusinessException 사용
+
+        [네이밍/레이어 규칙]
+        - 패키지: 소문자, 클래스/인터페이스: PascalCase, 변수/메서드: camelCase
         - Controller: {Domain}Controller
         - API Interface(Swagger): {Domain}Api
         - Service 인터페이스: {Domain}Usecase
         - Service 구현체: {Domain}Service
         - Repository: {Domain}Repository
         - DTO: CreateXXRequest / CreateXXResponse
-        - SuccessCode Enum: {Domain}SuccessCode
-        - ErrorCode Enum: {Domain}ErrorCode
-        - Exception: {Domain}Exception
+        - ErrorCode/SuccessCode/Exception: 도메인 단위로 분리
 
-        [메서드 네이밍]
-        - Controller: create / update / get / delete
-        - Service: 비즈니스 행위를 드러내는 동사 사용
-        - 조회 메서드:
-          * get: 단순 조회
-          * find: 조건 조회
-          * fetch: 외부 호출
-          * load: 내부 상태 로딩
-        - 상태 판단: is / has / can
-        - 데이터 변경: create, save, update, delete/remove, register, replace
-
-        [검증 책임]
-        - API Layer: 형식 검증 (@Valid 등)
-        - Service Layer: 비즈니스 규칙 검증
-        - 중복 검증 금지
-        - 위반 시 Custom BusinessException 사용
-
-        [Spring/JPA 주의사항]
-        - 필드 주입 금지 (생성자 주입)
-        - 조회 전용 트랜잭션은 readOnly=true 권장
-        - N+1 발생 가능성 지적
-        - 성능 민감 조회는 Projection / fetch join 고려
+        [로깅]
+        - request/response/DTO 전체를 그대로 로그로 남기지 말 것(PII/토큰/비밀번호)
+        - toString() fallback 사용 시 예외/민감정보/대용량 출력 방지(try-catch + truncate)
 
   auto_review:
     enabled: true
@@ -114,6 +98,3 @@ chat:
 knowledge_base:
   web_search:
     enabled: true
-  code_guidelines:
-    enabled: true
-
