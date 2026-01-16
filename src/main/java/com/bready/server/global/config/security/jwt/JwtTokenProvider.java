@@ -1,5 +1,6 @@
 package com.bready.server.global.config.security.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,17 +23,26 @@ public class JwtTokenProvider {
     public JwtTokenProvider(JwtProperties properties) {
 
         String secret = properties.getSecret();
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT Secret은 비어있을 수 없습니다.");
+        }
 
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
             throw new IllegalStateException("JWT Secret은 최소 32바이트 이상이어야 합니다.");
         }
 
-        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
-        this.accessExp = properties.getAccessExp();
-        this.refreshExp = properties.getRefreshExp();
+        long accessExp = properties.getAccessExp();
+        long refreshExp = properties.getRefreshExp();
+        if (accessExp <= 0 || refreshExp <= 0) {
+            throw new IllegalStateException("JWT 만료 시간은 0보다 커야 합니다.");
+        }
 
-        log.info("JWT 서명 키 초기화 완료");
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        this.accessExp = accessExp;
+        this.refreshExp = refreshExp;
+
+        log.info("JWT 서명 키 및 만료 시간 초기화 완료");
     }
 
     public String generateAccessToken(Long userId) {
@@ -40,6 +50,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
+                .claim("typ", "access")
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + accessExp))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
@@ -51,19 +62,22 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
+                .claim("typ", "refresh")
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + refreshExp))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateAccessToken(String token) {
         try {
-            Jwts.parserBuilder()
+            Claims claims = Jwts.parserBuilder()
                     .setSigningKey(signingKey)
                     .build()
-                    .parseClaimsJws(token);
-            return true;
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return "access".equals(claims.get("typ"));
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
