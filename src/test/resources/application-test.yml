@@ -26,3 +26,8 @@ spring:
 logging:
   level:
     root: warn
+
+jwt:
+  secret: BRaerqDY_gdsf_gasd_fdtqwer_DKS_32_SDFQES_HASF  # 테스트용 의미 없는 값
+  access-exp: 3600000
+  refresh-exp: 1209600000
