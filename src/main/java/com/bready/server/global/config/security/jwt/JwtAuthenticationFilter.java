@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return header.substring(7);
         }
 
-        // 쿠키 방식 
+        // 쿠키 방식
         if (request.getCookies() != null) {
             return Arrays.stream(request.getCookies())
                     .filter(cookie -> "accessToken".equals(cookie.getName()))
