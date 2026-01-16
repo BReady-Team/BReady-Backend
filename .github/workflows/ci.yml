@@ -72,18 +72,5 @@ jobs:
           echo "MySQL did not become ready in time"
           exit 1
 
-      - name: Wait for Redis to be ready
-        run: |
-          echo "Waiting for Redis..."
-          for i in {1..20}; do
-            if redis-cli -h 127.0.0.1 ping | grep -q PONG; then
-              echo "Redis is ready"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Redis did not become ready in time"
-          exit 1
-
       - name: Build and run tests
         run: ./gradlew clean build --stacktrace
