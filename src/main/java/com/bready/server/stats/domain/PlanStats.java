@@ -29,6 +29,6 @@ public class PlanStats extends BaseEntity {
     @Column(name = "total_switches")
     private Integer totalSwitches;
 
-    @Column(precision = 5, scale = 2)
+    @Column(name = "reliability_score", precision = 5, scale = 2)
     private BigDecimal reliabilityScore;
 }
