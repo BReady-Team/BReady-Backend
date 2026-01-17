@@ -19,10 +19,10 @@ public class PlaceCandidate extends BaseEntity {
     // 어떤 카테고리의 후보인가
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private PlanCategory category;
+    private PlanCategory category; // PlanCategory와의 연관관계 설정 (1:N)
 
     // 실제 장소
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id", nullable = false)
-    private Place place;
+    private Place place; // Place와의 연관관계 설정 (1:N)
 }
