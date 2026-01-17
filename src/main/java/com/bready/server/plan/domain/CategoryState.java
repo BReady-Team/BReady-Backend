@@ -1,11 +1,14 @@
 package com.bready.server.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "category_states",
         uniqueConstraints = {@UniqueConstraint(columnNames = "category_id")}
