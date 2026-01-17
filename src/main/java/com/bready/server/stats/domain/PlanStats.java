@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @Entity
@@ -27,6 +29,6 @@ public class PlanStats extends BaseEntity {
     @Column(name = "total_switches")
     private Integer totalSwitches;
 
-    @Column(name = "reliability_score")
-    private Double reliabilityScore;
+    @Column(precision = 5, scale = 2)
+    private BigDecimal reliabilityScore;
 }

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @Entity
@@ -24,11 +26,11 @@ public class Place extends BaseEntity {
 
     private String address;
 
-    @Column(precision = 10, scale = 7)
-    private Double latitude;
+    @Column(precision = 10, scale = 6, nullable = false)
+    private BigDecimal latitude;
 
-    @Column(precision = 10, scale = 7)
-    private Double longitude;
+    @Column(precision = 10, scale = 6, nullable = false)
+    private BigDecimal longitude;
 
     @Column(name = "is_indoor")
     private Boolean isIndoor;
