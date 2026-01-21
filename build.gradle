@@ -33,7 +33,7 @@ dependencies {
 
 	// Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 
 	// Validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
