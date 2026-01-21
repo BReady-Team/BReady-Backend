@@ -60,7 +60,7 @@ public class PlaceSearchService {
                     .toList();
 
         } catch (Exception e) {
-            throw ApplicationException.from(PlaceErrorCase.KAKAO_RESPONSE_PARSE_FAILED);
+            throw new ApplicationException(PlaceErrorCase.KAKAO_RESPONSE_PARSE_FAILED, e);
         }
     }
 

@@ -86,6 +86,6 @@ public class KakaoPlaceClient {
                                 ))
                 )
                 .bodyToMono(String.class)
-                .block();
+                .block(java.time.Duration.ofSeconds(10));
     }
 }
