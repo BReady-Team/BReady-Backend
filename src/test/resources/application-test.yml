@@ -32,3 +32,6 @@ jwt:
   secret: ${JWT_SECRET:test-jwt-secret-minimum-32-bytes-required-for-validation}
   access-exp: 3600000
   refresh-exp: 1209600000
+
+kakao:
+  rest-api-key: test-kakao-api-key
