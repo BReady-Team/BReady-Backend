@@ -34,4 +34,4 @@ jwt:
   refresh-exp: 1209600000
 
 kakao:
-  rest-api-key: test-kakao-api-key
+  rest-api-key: ${KAKAO_REST_API_KEY:test-kakao-api-key}
