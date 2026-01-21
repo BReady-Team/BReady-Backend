@@ -14,10 +14,10 @@ import java.time.Duration;
 @Configuration
 public class WebClientConfig {
 
-    @Bean
-    public WebClient webClient() {
+    @Bean(name = "kakaoWebClient")
+    public WebClient kakaoWebClient() {
         HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000)
                 .responseTimeout(Duration.ofSeconds(5))
                 .doOnConnected(conn ->
                         conn.addHandlerLast(new ReadTimeoutHandler(5))
@@ -26,6 +26,9 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer ->
+                        configurer.defaultCodecs().maxInMemorySize(1024 * 1024)
+                )
                 .build();
     }
 }
