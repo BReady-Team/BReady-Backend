@@ -1,5 +1,6 @@
 package com.bready.server.place.service;
 
+import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.place.domain.PlaceCategoryType;
 import com.bready.server.place.dto.PlaceSearchResponse;
 import com.bready.server.place.dto.kakao.KakaoPlaceDocument;
@@ -8,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.bready.server.place.exception.PlaceErrorCase;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class PlaceSearchService {
                     .toList();
 
         } catch (Exception e) {
-            throw new RuntimeException("카카오 장소 검색 파싱 실패", e);
+            throw ApplicationException.from(PlaceErrorCase.KAKAO_RESPONSE_PARSE_FAILED);
         }
     }
 
