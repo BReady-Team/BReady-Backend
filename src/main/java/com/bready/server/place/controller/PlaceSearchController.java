@@ -13,11 +13,16 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -61,7 +66,10 @@ public class PlaceSearchController {
                     in = ParameterIn.QUERY,
                     example = "37.544"
             )
-            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false)
+            @DecimalMin("-90.0")
+            @DecimalMax("90.0")
+            Double latitude,
 
             @Parameter(
                     name = "longitude",
@@ -69,7 +77,10 @@ public class PlaceSearchController {
                     in = ParameterIn.QUERY,
                     example = "127.055"
             )
-            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false)
+            @DecimalMin("-180.0")
+            @DecimalMax("180.0")
+            Double longitude,
 
             @Parameter(
                     name = "radius",
