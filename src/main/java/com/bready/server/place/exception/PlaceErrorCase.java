@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum PlaceErrorCase implements ErrorCase {
 
-    PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "장소를 찾을 수 없습니다."),
+    PLACE_SEARCH_FAILED(HttpStatus.BAD_REQUEST, 4001, "장소 검색에 실패했습니다."),
     INVALID_PLACE_TYPE(HttpStatus.BAD_REQUEST, 3002, "장소 타입이 유효하지 않습니다."),
     PLACE_ACCESS_DENIED(HttpStatus.FORBIDDEN, 3003, "해당 장소에 대한 접근 권한이 없습니다.");
 
