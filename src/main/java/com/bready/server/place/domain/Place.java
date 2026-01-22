@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "places")
+@Table(name = "places",
+        uniqueConstraints = @UniqueConstraint(name = "uk_places_external_id", columnNames = "external_id"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
