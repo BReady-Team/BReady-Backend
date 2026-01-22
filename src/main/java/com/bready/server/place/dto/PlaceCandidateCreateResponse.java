@@ -7,5 +7,6 @@ import java.time.LocalDateTime;
 @Builder
 public record PlaceCandidateCreateResponse(
         Long candidateId,
+        PlaceSummaryResponse place,
         LocalDateTime createdAt
 ) {}
