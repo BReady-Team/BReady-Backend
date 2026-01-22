@@ -21,7 +21,7 @@ public class PlacePersistenceService {
     public Place getOrCreate(PlaceCandidateCreateRequest request) {
         try {
             return placeRepository.findByExternalId(request.externalId())
-                    .orElseGet(() -> placeRepository.save(
+                    .orElseGet(() -> placeRepository.saveAndFlush(
                             Place.create(
                                     request.externalId(),
                                     request.name(),

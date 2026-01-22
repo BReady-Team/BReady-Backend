@@ -37,7 +37,7 @@ public class PlaceCandidateService {
         // PlaceCandidate 저장 -> 동시성 중복은 DB 유니크로 차단
         PlaceCandidate saved;
         try {
-            saved = placeCandidateRepository.save(PlaceCandidate.create(category, place));
+            saved = placeCandidateRepository.saveAndFlush(PlaceCandidate.create(category, place));
         } catch (DataIntegrityViolationException e) {
             throw ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE);
         }
