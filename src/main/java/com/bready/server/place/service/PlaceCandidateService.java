@@ -26,7 +26,7 @@ public class PlaceCandidateService {
     @Transactional
     public PlaceCandidateCreateResponse createCandidate(PlaceCandidateCreateRequest request) {
 
-        PlanCategory category = planCategoryRepository.findById(request.categoryId())
+        PlanCategory category = planCategoryRepository.findByIdAndPlan_Id(request.categoryId(), request.planId())
                 .orElseThrow(() -> ApplicationException.from(PlaceErrorCase.INVALID_PLAN_OR_CATEGORY));
 
         Place place;
