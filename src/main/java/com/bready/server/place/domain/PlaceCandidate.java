@@ -8,7 +8,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "place_candidates")
+@Table(
+        name = "place_candidates",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_category_place",
+                        columnNames = {"category_id", "place_id"}
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlaceCandidate extends BaseEntity {

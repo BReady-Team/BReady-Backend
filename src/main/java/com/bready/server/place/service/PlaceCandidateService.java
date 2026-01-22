@@ -5,13 +5,13 @@ import com.bready.server.place.domain.Place;
 import com.bready.server.place.domain.PlaceCandidate;
 import com.bready.server.place.dto.PlaceCandidateCreateRequest;
 import com.bready.server.place.dto.PlaceCandidateCreateResponse;
-import com.bready.server.place.dto.PlaceSummaryResponse;
 import com.bready.server.place.exception.PlaceErrorCase;
 import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.place.repository.PlaceRepository;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,43 +25,43 @@ public class PlaceCandidateService {
 
     @Transactional
     public PlaceCandidateCreateResponse createCandidate(PlaceCandidateCreateRequest request) {
-        PlanCategory category = planCategoryRepository
-                .findByIdAndPlan_Id(request.categoryId(), request.planId())
+
+        PlanCategory category = planCategoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> ApplicationException.from(PlaceErrorCase.INVALID_PLAN_OR_CATEGORY));
 
-        Place place = placeRepository.findByExternalId(request.externalId())
-                .orElseGet(() -> placeRepository.save(
-                        Place.create(
-                                request.externalId(),
-                                request.name(),
-                                request.address(),
-                                request.latitude(),
-                                request.longitude(),
-                                request.isIndoor()
-                        )
-                ));
+        Place place;
+        try {
+            place = placeRepository.findByExternalId(request.externalId())
+                    .orElseGet(() -> placeRepository.save(
+                            Place.create(
+                                    request.externalId(),
+                                    request.name(),
+                                    request.address(),
+                                    request.latitude(),
+                                    request.longitude(),
+                                    request.isIndoor()
+                            )
+                    ));
+        } catch (DataIntegrityViolationException e) {
+            // 동시 insert 충돌 → 재조회
+            place = placeRepository.findByExternalId(request.externalId())
+                    .orElseThrow(() ->
+                            ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE)
+                    );
+        }
 
-        // category + place 중복 방지
-        if (placeCandidateRepository.existsByCategoryAndPlace(category, place)) {
+        // PlaceCandidate 저장 (중복은 DB가 차단하도록)
+        PlaceCandidate saved;
+        try {
+            saved = placeCandidateRepository.save(
+                    PlaceCandidate.create(category, place)
+            );
+        } catch (DataIntegrityViolationException e) {
             throw ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE);
         }
 
-        // 장소 후보 저장
-        PlaceCandidate saved = placeCandidateRepository.save(
-                PlaceCandidate.create(category, place)
-        );
-
         return PlaceCandidateCreateResponse.builder()
                 .candidateId(saved.getId())
-                .place(
-                        PlaceSummaryResponse.builder()
-                                .id(place.getId())
-                                .externalId(place.getExternalId())
-                                .name(place.getName())
-                                .address(place.getAddress())
-                                .isIndoor(place.getIsIndoor())
-                                .build()
-                )
                 .createdAt(saved.getCreatedAt())
                 .build();
     }
