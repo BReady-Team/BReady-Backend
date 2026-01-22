@@ -13,6 +13,7 @@ import com.bready.server.plan.repository.PlanCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -26,31 +27,16 @@ public class PlaceCandidateService {
     @Transactional
     public PlaceCandidateCreateResponse createCandidate(PlaceCandidateCreateRequest request) {
 
-        PlanCategory category = planCategoryRepository.findByIdAndPlan_Id(request.categoryId(), request.planId())
-                .orElseThrow(() -> ApplicationException.from(PlaceErrorCase.INVALID_PLAN_OR_CATEGORY));
+        // planId + categoryId 연관 검증
+        PlanCategory category = planCategoryRepository
+                .findByIdAndPlan_Id(request.categoryId(), request.planId())
+                .orElseThrow(() ->
+                        ApplicationException.from(PlaceErrorCase.INVALID_PLAN_OR_CATEGORY)
+                );
 
-        Place place;
-        try {
-            place = placeRepository.findByExternalId(request.externalId())
-                    .orElseGet(() -> placeRepository.save(
-                            Place.create(
-                                    request.externalId(),
-                                    request.name(),
-                                    request.address(),
-                                    request.latitude(),
-                                    request.longitude(),
-                                    request.isIndoor()
-                            )
-                    ));
-        } catch (DataIntegrityViolationException e) {
-            // 동시 insert 충돌 → 재조회
-            place = placeRepository.findByExternalId(request.externalId())
-                    .orElseThrow(() ->
-                            ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE)
-                    );
-        }
+        Place place = getOrCreatePlace(request);
 
-        // PlaceCandidate 저장 (중복은 DB가 차단하도록)
+        // 후보 저장 (중복은 DB 유니크 제약으로 차단)
         PlaceCandidate saved;
         try {
             saved = placeCandidateRepository.save(
@@ -65,5 +51,30 @@ public class PlaceCandidateService {
                 .createdAt(saved.getCreatedAt())
                 .build();
     }
-}
 
+    // Place 조회 또는 생성은 별도 트랜잭션으로 분리
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected Place getOrCreatePlace(PlaceCandidateCreateRequest request) {
+        try {
+            return placeRepository.findByExternalId(request.externalId())
+                    .orElseGet(() ->
+                            placeRepository.save(
+                                    Place.create(
+                                            request.externalId(),
+                                            request.name(),
+                                            request.address(),
+                                            request.latitude(),
+                                            request.longitude(),
+                                            request.isIndoor()
+                                    )
+                            )
+                    );
+        } catch (DataIntegrityViolationException e) {
+            // 다른 트랜잭션이 먼저 insert 한 경우
+            return placeRepository.findByExternalId(request.externalId())
+                    .orElseThrow(() ->
+                            ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE)
+                    );
+        }
+    }
+}
