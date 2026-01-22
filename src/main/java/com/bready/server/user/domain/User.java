@@ -18,5 +18,14 @@ public class User extends BaseEntity {
 
     private String password;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+
+    public static User create(String email, String encodedPassword) {
+        User user = new User();
+        user.email = email;
+        user.password = encodedPassword;
+        user.status = UserStatus.ACTIVE;
+        return user;
+    }
 }
