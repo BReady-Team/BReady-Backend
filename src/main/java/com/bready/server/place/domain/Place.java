@@ -44,6 +44,15 @@ public class Place extends BaseEntity {
             BigDecimal longitude,
             Boolean isIndoor
     ) {
+        if (externalId == null || externalId.isBlank()) {
+            throw new IllegalArgumentException("externalId는 필수입니다.");
+        }
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name은 필수입니다.");
+        }
+        if (latitude == null || longitude == null) {
+            throw new IllegalArgumentException("latitude와 longitude는 필수입니다.");
+        }
         Place place = new Place();
         place.externalId = externalId;
         place.name = name;
