@@ -31,6 +31,12 @@ public class PlaceCandidate extends BaseEntity {
             PlanCategory category,
             Place place
     ) {
+        if (category == null) {
+            throw new IllegalArgumentException("category는 필수입니다.");
+        }
+        if (place == null) {
+            throw new IllegalArgumentException("place는 필수입니다.");
+        }
         PlaceCandidate candidate = new PlaceCandidate();
         candidate.category = category;
         candidate.place = place;
