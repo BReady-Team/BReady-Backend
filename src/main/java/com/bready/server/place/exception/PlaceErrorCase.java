@@ -18,7 +18,9 @@ public enum PlaceErrorCase implements ErrorCase {
     DUPLICATE_PLACE_CANDIDATE(HttpStatus.CONFLICT, 4106, "이미 해당 카테고리에 등록된 장소입니다."),
     INVALID_PLAN_OR_CATEGORY(HttpStatus.BAD_REQUEST, 4107, "유효하지 않은 플랜 또는 카테고리입니다."),
     DUPLICATE_PLACE(HttpStatus.CONFLICT, 4108, "이미 등록된 장소입니다."),
-    PLACE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 4501, "장소 저장에 실패했습니다.");
+    PLACE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 4109, "장소 저장에 실패했습니다."),
+    PLACE_CANDIDATE_NOT_FOUND(HttpStatus.NOT_FOUND, 4110, "존재하지 않는 장소 후보 입니다."),
+    ALREADY_REPRESENTATIVE_CANDIDATE(HttpStatus.CONFLICT, 4111, "이미 대표 장소 후보 입니다.");
 
 
     private final HttpStatus httpStatus;
