@@ -77,7 +77,7 @@ public class PlaceCandidateService {
         Long categoryId = category.getId();
 
         CategoryState state = categoryStateRepository
-                .findByCategory_Id(categoryId)
+                .findByCategory_IdForUpdate(categoryId)
                 .orElse(null);
 
         if (state == null) {

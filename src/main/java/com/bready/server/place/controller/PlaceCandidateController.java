@@ -62,7 +62,7 @@ public class PlaceCandidateController {
             @ApiResponse(
                     responseCode = "200",
                     description = "대표 장소 후보 선택 성공",
-                    content = @Content(schema = @Schema(implementation = PlaceCandidateRepresentativeResponse.class))
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))
             ),
             @ApiResponse(
                     responseCode = "404",
