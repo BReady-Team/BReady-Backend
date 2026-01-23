@@ -28,4 +28,21 @@ public class CategoryState {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false, unique = true)
     private PlanCategory category; // PlanCategory와의 연관관계 설정 (1:1)
+
+    public static CategoryState create(PlanCategory category, Long representativeCandidateId) {
+        CategoryState state = new CategoryState();
+        state.category = category;
+        state.currentCandidateId = representativeCandidateId;
+        state.updatedAt = LocalDateTime.now();
+        return state;
+    }
+
+    public void changeRepresentative(Long representativeCandidateId) {
+        this.currentCandidateId = representativeCandidateId;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isRepresentative(Long candidateId) {
+        return this.currentCandidateId != null && this.currentCandidateId.equals(candidateId);
+    }
 }
