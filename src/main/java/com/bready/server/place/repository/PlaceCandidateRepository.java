@@ -15,4 +15,12 @@ public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, 
         where pc.id = :candidateId
     """)
     Optional<PlaceCandidate> findByIdWithCategoryAndPlace(Long candidateId);
+
+    @Query("""
+        select pc
+        from PlaceCandidate pc
+        join fetch pc.category c
+        where pc.id = :candidateId
+    """)
+    Optional<PlaceCandidate> findByIdWithCategory(Long candidateId);
 }
