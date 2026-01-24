@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.user.exception.UserErrorCase;
+
 import java.time.ZoneOffset;
 
 @Service
@@ -26,7 +29,7 @@ public class AuthService {
 
         // 1) 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("DUPLICATED_EMAIL");
+            throw new ApplicationException(UserErrorCase.DUPLICATED_EMAIL);
         }
 
         // 2) User 저장
