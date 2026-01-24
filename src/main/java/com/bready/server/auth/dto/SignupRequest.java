@@ -23,7 +23,7 @@ public class SignupRequest {
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&]).{8,}$",
+            regexp = "^(?=.*[A-Za-z])(?=.*[@$!%*#?&]).{8,}$",
             message = "비밀번호가 정책을 충족하지 않습니다."
     )
     private String password;
