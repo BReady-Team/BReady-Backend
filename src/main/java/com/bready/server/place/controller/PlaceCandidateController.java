@@ -3,9 +3,11 @@ package com.bready.server.place.controller;
 import com.bready.server.global.response.CommonResponse;
 import com.bready.server.place.dto.PlaceCandidateCreateRequest;
 import com.bready.server.place.dto.PlaceCandidateCreateResponse;
+import com.bready.server.place.dto.PlaceCandidateDeleteResponse;
 import com.bready.server.place.dto.PlaceCandidateRepresentativeResponse;
 import com.bready.server.place.service.PlaceCandidateService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/api/v1/places")
@@ -82,5 +83,34 @@ public class PlaceCandidateController {
         return CommonResponse.success(
                 placeCandidateService.setRepresentative(candidateId)
         );
+    }
+
+    @DeleteMapping("/candidates/{candidateId}")
+    @Operation(
+            summary = "장소 후보 삭제",
+            description = "특정 카테고리에 등록된 장소 후보를 삭제합니다. (대표 후보로 선택된 장소는 삭제 불가)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "삭제 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 후보",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "대표 장소는 삭제 불가",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))
+            )
+    })
+    public CommonResponse<PlaceCandidateDeleteResponse> deleteCandidate(
+            @Parameter(description = "삭제할 장소 후보 ID", example = "12", required = true)
+            @PathVariable Long candidateId
+    ) {
+        return CommonResponse.success(placeCandidateService.deleteCandidate(candidateId));
     }
 }
