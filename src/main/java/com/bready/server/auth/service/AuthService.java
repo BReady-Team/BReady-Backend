@@ -15,6 +15,7 @@ import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.user.exception.UserErrorCase;
 
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +45,9 @@ public class AuthService {
         // 4. 응답 구성
         String createdAt = user.getCreatedAt() == null
                 ? null
-                : user.getCreatedAt().toString();
-
+                : user.getCreatedAt()
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         return SignupResponse.builder()
                 .userId(user.getId())
