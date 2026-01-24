@@ -121,11 +121,11 @@ public class PlaceCandidateService {
             throw ApplicationException.from(PlaceErrorCase.REPRESENTATIVE_CANDIDATE_CANNOT_DELETE);
         }
 
-        placeCandidateRepository.delete(candidate);
+        candidate.softDelete();
 
         return PlaceCandidateDeleteResponse.builder()
                 .candidateId(candidateId)
-                .deletedAt(LocalDateTime.now())
+                .deletedAt(candidate.getDeletedAt())
                 .build();
     }
 }
