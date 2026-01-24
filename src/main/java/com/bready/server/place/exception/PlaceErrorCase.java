@@ -21,7 +21,7 @@ public enum PlaceErrorCase implements ErrorCase {
     PLACE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 4109, "장소 저장에 실패했습니다."),
     PLACE_CANDIDATE_NOT_FOUND(HttpStatus.NOT_FOUND, 4110, "존재하지 않는 장소 후보 입니다."),
     ALREADY_REPRESENTATIVE_CANDIDATE(HttpStatus.CONFLICT, 4111, "이미 대표 장소 후보 입니다."),
-    REPRESENTATIVE_CANDIDATE_CANNOT_DELETE(HttpStatus.CONFLICT, 4091, "대표 장소는 삭제할 수 없습니다.");
+    REPRESENTATIVE_CANDIDATE_CANNOT_DELETE(HttpStatus.CONFLICT, 4112, "대표 장소는 삭제할 수 없습니다.");
 
 
     private final HttpStatus httpStatus;

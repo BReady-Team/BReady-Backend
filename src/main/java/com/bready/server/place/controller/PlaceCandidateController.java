@@ -13,11 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/places")
+@Validated
 @RequiredArgsConstructor
 public class PlaceCandidateController {
 
@@ -78,6 +81,7 @@ public class PlaceCandidateController {
     })
     public CommonResponse<PlaceCandidateRepresentativeResponse> setRepresentative(
             @Parameter(description = "대표로 선택할 장소 후보 ID", example = "12", required = true)
+            @Positive
             @PathVariable Long candidateId
     ) {
         return CommonResponse.success(
@@ -109,6 +113,7 @@ public class PlaceCandidateController {
     })
     public CommonResponse<PlaceCandidateDeleteResponse> deleteCandidate(
             @Parameter(description = "삭제할 장소 후보 ID", example = "12", required = true)
+            @Positive
             @PathVariable Long candidateId
     ) {
         return CommonResponse.success(placeCandidateService.deleteCandidate(candidateId));
