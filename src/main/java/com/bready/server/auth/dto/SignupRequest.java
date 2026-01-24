@@ -19,9 +19,11 @@ public class SignupRequest {
 
     @NotBlank(message = "이메일을 입력해주세요.")
     @Email(message = "이메일 형식이 올바르지 않습니다.")
+    @Size(max = 320, message = "이메일 형식이 올바르지 않습니다.")
     private String email;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
+    @Size(max = 72, message = "비밀번호가 정책을 충족하지 않습니다.")
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*[@$!%*#?&]).{8,}$",
             message = "비밀번호가 정책을 충족하지 않습니다."
