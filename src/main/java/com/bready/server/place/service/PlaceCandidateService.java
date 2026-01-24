@@ -3,10 +3,7 @@ package com.bready.server.place.service;
 import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.place.domain.Place;
 import com.bready.server.place.domain.PlaceCandidate;
-import com.bready.server.place.dto.PlaceCandidateCreateRequest;
-import com.bready.server.place.dto.PlaceCandidateCreateResponse;
-import com.bready.server.place.dto.PlaceCandidateRepresentativeResponse;
-import com.bready.server.place.dto.PlaceSummaryResponse;
+import com.bready.server.place.dto.*;
 import com.bready.server.place.exception.PlaceErrorCase;
 import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategorySelectionLog;
@@ -106,6 +103,29 @@ public class PlaceCandidateService {
                 .categoryId(categoryId)
                 .representativeCandidateId(candidateId)
                 .changedAt(state.getUpdatedAt())
+                .build();
+    }
+
+    @Transactional
+    public PlaceCandidateDeleteResponse deleteCandidate(Long candidateId) {
+        PlaceCandidate candidate = placeCandidateRepository.findByIdWithCategory(candidateId)
+                .orElseThrow(() -> ApplicationException.from(PlaceErrorCase.PLACE_CANDIDATE_NOT_FOUND));
+
+        Long categoryId = candidate.getCategory().getId();
+
+        CategoryState state = categoryStateRepository.findByCategory_IdForUpdate(categoryId)
+                .orElse(null);
+
+        if (state != null && state.getCurrentCandidateId() != null
+                && state.getCurrentCandidateId().equals(candidateId)) {
+            throw ApplicationException.from(PlaceErrorCase.REPRESENTATIVE_CANDIDATE_CANNOT_DELETE);
+        }
+
+        placeCandidateRepository.delete(candidate);
+
+        return PlaceCandidateDeleteResponse.builder()
+                .candidateId(candidateId)
+                .deletedAt(LocalDateTime.now())
                 .build();
     }
 }
