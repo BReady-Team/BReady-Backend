@@ -1,9 +1,8 @@
 package com.bready.server.global.config.security.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.bready.server.auth.exception.AuthErrorCase;
+import com.bready.server.global.exception.ApplicationException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -80,6 +79,24 @@ public class JwtTokenProvider {
             return "access".equals(claims.get("typ"));
         } catch (JwtException | IllegalArgumentException e) {
             return false;
+        }
+    }
+
+    public void validateRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (!"refresh".equals(claims.get("typ"))) {
+                throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
+            }
+        } catch (ExpiredJwtException e) {
+            throw new ApplicationException(AuthErrorCase.EXPIRED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
         }
     }
 
