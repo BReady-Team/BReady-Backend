@@ -1,7 +1,13 @@
 package com.bready.server.auth.service;
 
+import com.bready.server.auth.domain.RefreshToken;
+import com.bready.server.auth.dto.LoginRequest;
 import com.bready.server.auth.dto.SignupRequest;
 import com.bready.server.auth.dto.SignupResponse;
+import com.bready.server.auth.dto.TokenResponse;
+import com.bready.server.auth.exception.AuthErrorCase;
+import com.bready.server.auth.repository.RefreshTokenRepository;
+import com.bready.server.global.config.security.jwt.JwtTokenProvider;
 import com.bready.server.user.domain.User;
 import com.bready.server.user.domain.UserProfile;
 import com.bready.server.user.repository.UserProfileRepository;
@@ -25,6 +31,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
@@ -62,5 +71,32 @@ public class AuthService {
             // existsByEmail 통과 후 동시성으로 unique 제약 위반 발생 가능
             throw new ApplicationException(UserErrorCase.DUPLICATED_EMAIL, e);
         }
+    }
+
+    @Transactional
+    public TokenResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ApplicationException(AuthErrorCase.INVALID_CREDENTIALS));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ApplicationException(AuthErrorCase.INVALID_CREDENTIALS);
+        }
+
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        refreshTokenRepository.save(
+                RefreshToken.builder()
+                        .key(String.valueOf(user.getId()))
+                        .token(refreshToken)
+                        .userId(user.getId())
+                        .build()
+        );
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }
