@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatus;
 public enum TriggerErrorCase implements ErrorCase {
 
     TRIGGER_NOT_FOUND(HttpStatus.NOT_FOUND, 7001, "트리거를 찾을 수 없습니다."),
-    TRIGGER_ALREADY_EXECUTED(HttpStatus.BAD_REQUEST, 7002, "이미 실행된 트리거입니다.");
+    TRIGGER_ALREADY_EXECUTED(HttpStatus.BAD_REQUEST, 7002, "이미 실행된 트리거입니다."),
+    PLAN_OR_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, 4043, "존재하지 않는 플랜 또는 카테고리 입니다."),
+    TRIGGER_FORBIDDEN(HttpStatus.FORBIDDEN, 4033, "트리거를 발생시킬 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;
