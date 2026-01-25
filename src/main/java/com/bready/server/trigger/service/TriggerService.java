@@ -1,7 +1,6 @@
 package com.bready.server.trigger.service;
 
 import com.bready.server.global.exception.ApplicationException;
-import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
@@ -27,7 +26,8 @@ public class TriggerService {
     @Transactional
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
 
-        Plan plan = planRepository.findById(request.planId())
+        PlanCategory category = planCategoryRepository
+                .findByIdAndPlan_Id(request.categoryId(), request.planId())
                 .orElseThrow(() ->
                         ApplicationException.from(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND)
                 );
@@ -37,14 +37,8 @@ public class TriggerService {
         //     throw ApplicationException.from(TriggerErrorCase.NO_TRIGGER_PERMISSION);
         // }
 
-        PlanCategory category = planCategoryRepository
-                .findByIdAndPlan_Id(request.categoryId(), request.planId())
-                .orElseThrow(() ->
-                        ApplicationException.from(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND)
-                );
-
         Trigger trigger = triggerRepository.save(
-                Trigger.create(plan, category, request.triggerType())
+                Trigger.create(category.getPlan(), category, request.triggerType())
         );
 
         // 통계 증가 (결정/장소 변경 없음)
