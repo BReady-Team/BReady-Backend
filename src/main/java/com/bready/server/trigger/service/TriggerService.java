@@ -5,6 +5,7 @@ import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
+import com.bready.server.stats.service.PlanStatsService;
 import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.dto.TriggerCreateRequest;
 import com.bready.server.trigger.dto.TriggerCreateResponse;
@@ -21,6 +22,7 @@ public class TriggerService {
     private final PlanRepository planRepository;
     private final PlanCategoryRepository planCategoryRepository;
     private final TriggerRepository triggerRepository;
+    private final PlanStatsService planStatsService;
 
     @Transactional
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
@@ -44,6 +46,9 @@ public class TriggerService {
         Trigger trigger = triggerRepository.save(
                 Trigger.create(plan, category, request.triggerType())
         );
+
+        // 통계 증가 (결정/장소 변경 없음)
+        planStatsService.increaseTriggerCount(category.getPlan().getId());
 
         return TriggerCreateResponse.builder()
                 .triggerId(trigger.getId())
