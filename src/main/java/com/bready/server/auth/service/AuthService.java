@@ -6,7 +6,6 @@ import com.bready.server.user.domain.User;
 import com.bready.server.user.domain.UserProfile;
 import com.bready.server.user.repository.UserProfileRepository;
 import com.bready.server.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.user.exception.UserErrorCase;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
