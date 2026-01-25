@@ -21,6 +21,9 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
+    @OneToOne(mappedBy = "user")
+    private UserProfile userProfile;
+
     public static User create(String email, String encodedPassword) {
         User user = new User();
         user.email = email;
