@@ -1,6 +1,7 @@
 package com.bready.server.auth.controller;
 
 import com.bready.server.auth.dto.LoginRequest;
+import com.bready.server.auth.dto.RefreshRequest;
 import com.bready.server.auth.dto.SignupRequest;
 import com.bready.server.auth.dto.SignupResponse;
 import com.bready.server.auth.dto.TokenResponse;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
+
     private final AuthService authService;
+
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,6 +47,7 @@ public class AuthController {
         return CommonResponse.success(authService.signup(request));
     }
 
+
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -55,12 +59,32 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "400", description = "요청 값 오류 (누락 또는 형식 오류)",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-            @ApiResponse(responseCode = "401", description = "로그인 실패 (이메일 또는 비밀번호 불일치",
+            @ApiResponse(responseCode = "401", description = "로그인 실패 (이메일 또는 비밀번호 불일치)",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     public CommonResponse<TokenResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
         return CommonResponse.success(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "토큰 재발급",
+            description = "refreshToken으로 access/refresh 토큰을 재발급"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "재발급 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "필수 값 누락",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰/만료된 토큰/서버와 불일치",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<TokenResponse> refresh(
+            @Valid @RequestBody RefreshRequest request
+    ) {
+        return CommonResponse.success(authService.refresh(request));
     }
 }
