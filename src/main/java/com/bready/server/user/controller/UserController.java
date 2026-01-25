@@ -42,11 +42,10 @@ public class UserController {
     public CommonResponse<UserProfileDto> me() {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getPrincipal() == null) {
+        if (auth == null || !(auth.getPrincipal() instanceof Long userId)) {
             throw new ApplicationException(UserErrorCase.AUTH_REQUIRED);
         }
 
-        Long userId = (Long) auth.getPrincipal();
         User user = userService.getMe(userId);
 
         // userProfile 은 join 으로 함께 로딩
