@@ -44,7 +44,7 @@ public class AuthService {
 
             // 2) User 저장
             String encoded = passwordEncoder.encode(request.getPassword());
-            User user = userRepository.save(User.create(request.getEmail(), encoded));
+            User user = userRepository.save(User.createLocal(request.getEmail(), encoded));
 
             // 3) UserProfile 저장
             UserProfile profile = userProfileRepository.save(
