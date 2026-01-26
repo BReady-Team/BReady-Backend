@@ -30,4 +30,16 @@ public class SwitchLog extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_candidate_id", nullable = false)
     private PlaceCandidate toCandidate;
+
+    public static SwitchLog create(
+            Decision decision,
+            PlaceCandidate from,
+            PlaceCandidate to
+    ) {
+        SwitchLog log = new SwitchLog();
+        log.decision = decision;
+        log.fromCandidate = from;
+        log.toCandidate = to;
+        return log;
+    }
 }
