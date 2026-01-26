@@ -11,4 +11,8 @@ public class PlanStatsService {
     public void increaseTriggerCount(Long planId) {
         // 현재는 통계 미구현
     }
+
+    public void increaseSwitchCount(Long planId) {
+        // TODO: 통계 테이블 도입 후 구현
+    }
 }
