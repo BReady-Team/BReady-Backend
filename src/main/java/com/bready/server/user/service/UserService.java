@@ -29,6 +29,9 @@ public class UserService {
                 .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
 
         UserProfile profile = user.getUserProfile();
+        if (profile == null) {
+            throw new ApplicationException(UserErrorCase.USER_NOT_FOUND);
+        }
 
         String joinedAt = user.getCreatedAt() == null
                 ? null
