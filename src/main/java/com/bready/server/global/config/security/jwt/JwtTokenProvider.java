@@ -91,12 +91,12 @@ public class JwtTokenProvider {
                     .getBody();
 
             if (!"refresh".equals(claims.get("typ"))) {
-                throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
+                throw new ApplicationException(AuthErrorCase.REFRESH_TOKEN_INVALID);
             }
         } catch (ExpiredJwtException e) {
             throw new ApplicationException(AuthErrorCase.EXPIRED_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
-            throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
+            throw new ApplicationException(AuthErrorCase.REFRESH_TOKEN_INVALID);
         }
     }
 
