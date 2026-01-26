@@ -2,8 +2,6 @@ package com.bready.server.user.controller;
 
 import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.global.response.CommonResponse;
-import com.bready.server.user.domain.User;
-import com.bready.server.user.domain.UserProfile;
 import com.bready.server.user.dto.UserProfileDto;
 import com.bready.server.user.exception.UserErrorCase;
 import com.bready.server.user.service.UserService;
@@ -18,9 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -46,26 +41,6 @@ public class UserController {
             throw new ApplicationException(UserErrorCase.AUTH_REQUIRED);
         }
 
-        User user = userService.getMe(userId);
-
-        // userProfile 은 join 으로 함께 로딩
-        UserProfile profile = user.getUserProfile();
-
-        String joinedAt = user.getCreatedAt() == null
-                ? null
-                : user.getCreatedAt()
-                .atOffset(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-
-        UserProfileDto response = UserProfileDto.builder()
-                .userId(user.getId())
-                .nickname(profile.getNickname())
-                .email(user.getEmail())
-                .bio(profile.getBio())
-                .profileImageUrl(profile.getProfileImageUrl())
-                .joinedAt(joinedAt)
-                .build();
-
-        return CommonResponse.success(response);
+        return CommonResponse.success(userService.getMyProfile(userId));
     }
 }
