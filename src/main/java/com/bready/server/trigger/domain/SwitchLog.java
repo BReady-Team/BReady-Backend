@@ -9,7 +9,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "switch_logs")
+@Table(
+        name = "switch_logs",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_switchlog_decision", columnNames = "decision_id")
+        }
+)
 public class SwitchLog extends BaseEntity {
 
     @Id
