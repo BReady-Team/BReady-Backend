@@ -1,7 +1,9 @@
 package com.bready.server.trigger.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.PlanCategory;
+import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import com.bready.server.stats.service.PlanStatsService;
@@ -22,6 +24,7 @@ public class TriggerService {
     private final PlanCategoryRepository planCategoryRepository;
     private final TriggerRepository triggerRepository;
     private final PlanStatsService planStatsService;
+    private final CategoryStateRepository categoryStateRepository;
 
     @Transactional
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
@@ -32,14 +35,28 @@ public class TriggerService {
                         ApplicationException.from(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND)
                 );
 
+        CategoryState state = categoryStateRepository
+                .findByCategory_Id(category.getId())
+                .orElseThrow(() ->
+                        ApplicationException.from(TriggerErrorCase.CATEGORY_STATE_NOT_FOUND)
+                );
+
+        Long currentCandidateId = state.getCurrentCandidateId();
+
+        Trigger trigger = triggerRepository.save(
+                Trigger.create(
+                        category.getPlan(),
+                        category,
+                        currentCandidateId,
+                        request.triggerType()
+                )
+        );
+
         // TODO: 인증 도입 후 플랜 소유자 검증 로직 추가 필요
         // if (!category.getPlan().isOwnedBy(currentUserId)) {
         //     throw ApplicationException.from(TriggerErrorCase.NO_TRIGGER_PERMISSION);
         // }
 
-        Trigger trigger = triggerRepository.save(
-                Trigger.create(category.getPlan(), category, request.triggerType())
-        );
 
         // 통계 증가 (결정/장소 변경 없음)
         planStatsService.increaseTriggerCount(category.getPlan().getId());
