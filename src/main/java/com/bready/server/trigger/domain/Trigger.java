@@ -24,6 +24,10 @@ public class Trigger extends BaseEntity {
     @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
+    // 트리거 발생 당시 선택된 후보
+    @Column(name = "candidate_id", nullable = false)
+    private Long candidateId;
+
     // 발생한 카테고리
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -38,14 +42,30 @@ public class Trigger extends BaseEntity {
     @Column(name = "occurred_at", nullable = false)
     private LocalDateTime occurredAt;
 
+
     public static Trigger create(
             Plan plan,
             PlanCategory category,
+            Long candidateId,
             TriggerType triggerType
     ) {
+        if (plan == null) {
+            throw new IllegalArgumentException("plan은 필수입니다.");
+        }
+        if (category == null) {
+            throw new IllegalArgumentException("category는 필수입니다.");
+        }
+        if (candidateId == null) {
+            throw new IllegalArgumentException("candidateId는 필수입니다.");
+        }
+        if (triggerType == null) {
+            throw new IllegalArgumentException("triggerType은 필수입니다.");
+        }
+
         Trigger trigger = new Trigger();
         trigger.plan = plan;
         trigger.category = category;
+        trigger.candidateId = candidateId;
         trigger.triggerType = triggerType;
         trigger.occurredAt = LocalDateTime.now();
         return trigger;
