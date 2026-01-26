@@ -27,8 +27,8 @@ public class Decision extends BaseEntity {
     private Long id;
 
     // 어떤 트리거에 대한 결정인가
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trigger_id", nullable = false, unique = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trigger_id", nullable = false)
     private Trigger trigger;
 
     @Enumerated(EnumType.STRING)

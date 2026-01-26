@@ -9,6 +9,7 @@ import com.bready.server.trigger.exception.TriggerDecisionErrorCase;
 import com.bready.server.trigger.repository.DecisionRepository;
 import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,30 +21,30 @@ public class DecisionService {
     private final DecisionRepository decisionRepository;
 
     @Transactional
-    public DecisionCreateResponse createDecision(
-            Long triggerId,
-            DecisionCreateRequest request
-    ) {
+    public DecisionCreateResponse createDecision(Long triggerId, DecisionCreateRequest request) {
+
         Trigger trigger = triggerRepository.findById(triggerId)
                 .orElseThrow(() ->
                         ApplicationException.from(TriggerDecisionErrorCase.TRIGGER_NOT_FOUND)
                 );
 
-        // 이미 결정된 트리거인지 확인
-        if (decisionRepository.existsByTrigger_Id(triggerId)) {
-            throw ApplicationException.from(TriggerDecisionErrorCase.DECISION_ALREADY_MADE);
+        Decision decision;
+        try {
+            decision = decisionRepository.save(
+                    Decision.create(trigger, request.decisionType())
+            );
+        } catch (DataIntegrityViolationException e) {
+            throw ApplicationException.from(
+                    TriggerDecisionErrorCase.DECISION_ALREADY_MADE
+            );
         }
-
-        Decision decision = decisionRepository.save(
-                Decision.create(trigger, request.decisionType())
-        );
-
 
         return DecisionCreateResponse.builder()
                 .decisionId(decision.getId())
                 .decisionType(decision.getDecisionType().name())
                 .decidedAt(decision.getDecidedAt())
-                .needSwitch(decision.isSwitch() ? true : null)
+                .needSwitch(decision.isSwitch())
                 .build();
     }
+
 }
