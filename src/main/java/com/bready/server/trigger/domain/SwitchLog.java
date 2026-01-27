@@ -22,7 +22,7 @@ public class SwitchLog extends BaseEntity {
     private Long id;
 
     // 어떤 결정에 의해 발생했는지
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "decision_id", nullable = false)
     private Decision decision;
 
