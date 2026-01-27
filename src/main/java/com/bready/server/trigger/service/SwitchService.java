@@ -1,6 +1,7 @@
 package com.bready.server.trigger.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.place.domain.PlaceCandidate;
 import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.PlanCategory;
@@ -50,45 +51,59 @@ public class SwitchService {
 
         Long toCandidateId = request.toCandidateId();
 
-        // 전환 대상 후보가 해당 카테고리 후보인지 검증 (soft delete 포함)
-        if (!placeCandidateRepository.existsAliveByIdAndCategoryId(toCandidateId, categoryId)) {
-            boolean existsAlive = placeCandidateRepository.findAliveById(toCandidateId).isPresent();
-            if (!existsAlive) {
-                throw ApplicationException.from(TriggerSwitchErrorCase.TO_CANDIDATE_NOT_FOUND);
-            }
-            throw ApplicationException.from(TriggerSwitchErrorCase.TO_CANDIDATE_MISMATCH);
-        }
+        // 전환 대상 후보 조회 + 검증 (중복 쿼리 제거)
+        PlaceCandidate toCandidate =
+                placeCandidateRepository.findAliveByIdAndCategoryId(toCandidateId, categoryId)
+                        .orElseThrow(() -> {
+                            boolean existsAlive =
+                                    placeCandidateRepository.findAliveById(toCandidateId).isPresent();
+                            return existsAlive
+                                    ? ApplicationException.from(
+                                            TriggerSwitchErrorCase.TO_CANDIDATE_MISMATCH
+                                    )
+                                    : ApplicationException.from(
+                                            TriggerSwitchErrorCase.TO_CANDIDATE_NOT_FOUND
+                                    );
+                        });
 
-        // CategoryState 락 조회
-        CategoryState state = categoryStateRepository.findByCategory_IdForUpdate(categoryId)
+        // CategoryState 락 걸고 조회
+        CategoryState state = categoryStateRepository
+                .findByCategory_IdForUpdate(categoryId)
                 .orElseThrow(() -> ApplicationException.from(TriggerSwitchErrorCase.CATEGORY_STATE_NOT_FOUND));
 
         Long fromCandidateId = state.getCurrentCandidateId();
 
+        // 기존 대표 후보 없d으면 전환 불가
+        if (fromCandidateId == null) {
+            throw ApplicationException.from(TriggerSwitchErrorCase.FROM_CANDIDATE_NOT_FOUND);
+        }
+
         // 동일 후보 전환 방지
-        if (fromCandidateId != null && fromCandidateId.equals(toCandidateId)) {
+        if (fromCandidateId.equals(toCandidateId)) {
             throw ApplicationException.from(TriggerSwitchErrorCase.SAME_CANDIDATE);
         }
+
+        // 기존의 대표 후보 조회
+        PlaceCandidate fromCandidate =
+                placeCandidateRepository.findAliveById(fromCandidateId)
+                        .orElseThrow(() -> ApplicationException.from(TriggerSwitchErrorCase.FROM_CANDIDATE_NOT_FOUND));
 
         state.changeRepresentative(toCandidateId);
 
         SwitchLog saved;
-
         try {
             saved = switchLogRepository.saveAndFlush(
                     SwitchLog.create(
                             decision,
-                            placeCandidateRepository.findAliveById(fromCandidateId)
-                                    .orElseThrow(() -> ApplicationException.from(TriggerSwitchErrorCase.CATEGORY_STATE_NOT_FOUND)),
-                            placeCandidateRepository.findAliveById(toCandidateId)
-                                    .orElseThrow(() -> ApplicationException.from(TriggerSwitchErrorCase.TO_CANDIDATE_NOT_FOUND))
+                            fromCandidate,
+                            toCandidate
                     )
             );
         } catch (DataIntegrityViolationException e) {
+            // 유니크 제약으로 인한 중복 전환 방지
             throw ApplicationException.from(TriggerSwitchErrorCase.ALREADY_SWITCHED);
         }
 
-        // 통계 업데이트
         planStatsService.increaseSwitchCount(planId);
 
         return DecisionSwitchResponse.builder()

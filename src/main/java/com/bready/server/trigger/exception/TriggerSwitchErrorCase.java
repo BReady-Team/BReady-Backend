@@ -16,7 +16,8 @@ public enum TriggerSwitchErrorCase implements ErrorCase {
     CATEGORY_STATE_NOT_FOUND(HttpStatus.NOT_FOUND, 7204, "카테고리 상태 정보가 없습니다."),
     TO_CANDIDATE_NOT_FOUND(HttpStatus.NOT_FOUND, 7205, "전환 대상 장소 후보가 존재하지 않습니다."),
     TO_CANDIDATE_MISMATCH(HttpStatus.BAD_REQUEST, 7206, "전환 대상 후보가 해당 카테고리에 속하지 않습니다."),
-    SAME_CANDIDATE(HttpStatus.CONFLICT, 7207, "현재 대표 후보와 동일한 후보로는 전환할 수 없습니다.");
+    SAME_CANDIDATE(HttpStatus.CONFLICT, 7207, "현재 대표 후보와 동일한 후보로는 전환할 수 없습니다."),
+    FROM_CANDIDATE_NOT_FOUND(HttpStatus.NOT_FOUND, 7208, "현재 대표 장소 후보가 존재하지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;

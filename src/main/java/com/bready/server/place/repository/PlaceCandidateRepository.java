@@ -41,4 +41,13 @@ public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, 
           and pc.deletedAt is null
     """)
     boolean existsAliveByIdAndCategoryId(Long candidateId, Long categoryId);
+
+    @Query("""
+        select pc
+        from PlaceCandidate pc
+        where pc.id = :candidateId
+          and pc.category.id = :categoryId
+          and pc.deletedAt is null
+    """)
+    Optional<PlaceCandidate> findAliveByIdAndCategoryId(Long candidateId, Long categoryId);
 }
