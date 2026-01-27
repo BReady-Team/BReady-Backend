@@ -9,7 +9,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "switch_logs")
+@Table(
+        name = "switch_logs",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_switchlog_decision", columnNames = "decision_id")
+        }
+)
 public class SwitchLog extends BaseEntity {
 
     @Id
@@ -17,7 +22,7 @@ public class SwitchLog extends BaseEntity {
     private Long id;
 
     // 어떤 결정에 의해 발생했는지
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "decision_id", nullable = false)
     private Decision decision;
 
@@ -30,4 +35,16 @@ public class SwitchLog extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_candidate_id", nullable = false)
     private PlaceCandidate toCandidate;
+
+    public static SwitchLog create(
+            Decision decision,
+            PlaceCandidate from,
+            PlaceCandidate to
+    ) {
+        SwitchLog log = new SwitchLog();
+        log.decision = decision;
+        log.fromCandidate = from;
+        log.toCandidate = to;
+        return log;
+    }
 }

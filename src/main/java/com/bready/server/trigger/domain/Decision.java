@@ -52,4 +52,8 @@ public class Decision extends BaseEntity {
     public boolean isSwitch() {
         return decisionType == DecisionType.SWITCH;
     }
+
+    public Long getTargetCandidateId() {
+        return trigger.getCandidateId(); // SWITCH 대상 후보 ID
+    }
 }

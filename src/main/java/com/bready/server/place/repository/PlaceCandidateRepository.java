@@ -23,4 +23,31 @@ public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, 
         where pc.id = :candidateId
     """)
     Optional<PlaceCandidate> findByIdWithCategory(Long candidateId);
+
+    @Query("""
+        select pc
+        from PlaceCandidate pc
+        where pc.id = :candidateId
+          and pc.deletedAt is null
+    """)
+    Optional<PlaceCandidate> findAliveById(Long candidateId);
+
+    // 카테고리 일치 + 살아있는 후보 검증
+    @Query("""
+        select (count(pc) > 0)
+        from PlaceCandidate pc
+        where pc.id = :candidateId
+          and pc.category.id = :categoryId
+          and pc.deletedAt is null
+    """)
+    boolean existsAliveByIdAndCategoryId(Long candidateId, Long categoryId);
+
+    @Query("""
+        select pc
+        from PlaceCandidate pc
+        where pc.id = :candidateId
+          and pc.category.id = :categoryId
+          and pc.deletedAt is null
+    """)
+    Optional<PlaceCandidate> findAliveByIdAndCategoryId(Long candidateId, Long categoryId);
 }
