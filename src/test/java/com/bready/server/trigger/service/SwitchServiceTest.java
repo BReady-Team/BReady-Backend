@@ -4,6 +4,7 @@ import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.place.domain.PlaceCandidate;
 import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
+import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.stats.service.PlanStatsService;
@@ -59,6 +60,7 @@ class SwitchServiceTest {
 
         Decision decision = mock(Decision.class);
         Trigger trigger = mock(Trigger.class);
+        Plan plan = mock(Plan.class);
         PlanCategory category = mock(PlanCategory.class);
         CategoryState state = mock(CategoryState.class);
 
@@ -69,8 +71,8 @@ class SwitchServiceTest {
         given(decision.isSwitch()).willReturn(true);
         given(decision.getTrigger()).willReturn(trigger);
         given(trigger.getCategory()).willReturn(category);
-        given(trigger.getPlan().getId()).willReturn(planId);
-        given(category.getId()).willReturn(categoryId);
+        given(trigger.getPlan()).willReturn(plan);
+        given(plan.getId()).willReturn(planId);
 
         given(decisionRepository.findByIdWithTriggerPlanCategory(decisionId))
                 .willReturn(Optional.of(decision));
