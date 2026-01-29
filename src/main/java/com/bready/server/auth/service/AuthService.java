@@ -31,6 +31,7 @@ public class AuthService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenIssuer tokenIssuer;
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
@@ -80,21 +81,8 @@ public class AuthService {
             throw new ApplicationException(AuthErrorCase.INVALID_CREDENTIALS);
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-        refreshTokenRepository.save(
-                RefreshToken.builder()
-                        .key(String.valueOf(user.getId()))
-                        .token(refreshToken)
-                        .userId(user.getId())
-                        .build()
-        );
-
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return tokenIssuer.issue(user.getId());
     }
 
     @Transactional
@@ -115,22 +103,6 @@ public class AuthService {
             throw new ApplicationException(AuthErrorCase.REFRESH_TOKEN_INVALID);
         }
 
-        // 5) 새 토큰 발급
-        String newAccessToken = jwtTokenProvider.generateAccessToken(userId);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(userId);
-
-        // 6) Redis refresh 토큰 갱신
-        refreshTokenRepository.save(
-                RefreshToken.builder()
-                        .key(String.valueOf(userId))
-                        .token(newRefreshToken)
-                        .userId(userId)
-                        .build()
-        );
-
-        return TokenResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .build();
+        return tokenIssuer.issue(userId);
     }
 }
