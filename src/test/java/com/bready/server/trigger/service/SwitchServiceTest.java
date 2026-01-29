@@ -70,7 +70,10 @@ class SwitchServiceTest {
 
         given(decision.isSwitch()).willReturn(true);
         given(decision.getTrigger()).willReturn(trigger);
+
         given(trigger.getCategory()).willReturn(category);
+        given(category.getId()).willReturn(categoryId);
+
         given(trigger.getPlan()).willReturn(plan);
         given(plan.getId()).willReturn(planId);
 
@@ -138,5 +141,4 @@ class SwitchServiceTest {
                 .isInstanceOf(ApplicationException.class)
                 .hasMessageContaining("이미 전환");
     }
-
 }
