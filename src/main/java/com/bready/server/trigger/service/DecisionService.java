@@ -46,5 +46,4 @@ public class DecisionService {
                 .needSwitch(decision.isSwitch())
                 .build();
     }
-
 }
