@@ -98,4 +98,20 @@ class TriggerServiceTest {
                     assertThat(ae.getErrorCase()).isEqualTo(TriggerErrorCase.CATEGORY_STATE_NOT_FOUND);
                 });
     }
+
+    @Test
+    @DisplayName("트리거 생성 실패 - 플랜/카테고리 없음")
+    void createTrigger_planOrCategoryNotFound() {
+        given(planCategoryRepository.findByIdAndPlan_Id(any(), any()))
+                .willReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                triggerService.createTrigger(new TriggerCreateRequest(1L, 999L, TriggerType.WEATHER_BAD))
+        )
+                .isInstanceOf(ApplicationException.class)
+                .satisfies(ex -> {
+                    ApplicationException ae = (ApplicationException) ex;
+                    assertThat(ae.getErrorCase()).isEqualTo(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND);
+                });
+    }
 }
