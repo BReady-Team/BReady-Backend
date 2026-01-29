@@ -1,9 +1,11 @@
 package com.bready.server.trigger.controller;
 
 import com.bready.server.global.config.security.TestSecurityConfig;
+import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.trigger.domain.TriggerType;
 import com.bready.server.trigger.dto.TriggerCreateRequest;
 import com.bready.server.trigger.dto.TriggerCreateResponse;
-import com.bready.server.trigger.domain.TriggerType;
+import com.bready.server.trigger.exception.TriggerErrorCase;
 import com.bready.server.trigger.service.TriggerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +22,8 @@ import java.time.LocalDateTime;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TriggerController.class)
 @Import(TestSecurityConfig.class)
@@ -61,5 +64,27 @@ class TriggerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("success"))
                 .andExpect(jsonPath("$.data.triggerId").value(10L));
+    }
+
+    @Test
+    @DisplayName("트리거 발생 실패 - 플랜/카테고리 없음 → 404")
+    void createTrigger_notFound() throws Exception {
+
+        TriggerCreateRequest request = new TriggerCreateRequest(
+                1L,
+                999L,
+                TriggerType.WEATHER_BAD
+        );
+
+        given(triggerService.createTrigger(any()))
+                .willThrow(ApplicationException.from(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND));
+
+        mockMvc.perform(
+                        post("/api/v1/triggers")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("존재하지 않는 플랜 또는 카테고리 입니다."));
     }
 }
