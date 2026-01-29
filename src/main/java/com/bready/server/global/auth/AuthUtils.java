@@ -39,7 +39,10 @@ public class AuthUtils {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
+            String token = header.substring(7).trim();
+            if (!token.isEmpty()) {
+                return token;
+            }
         }
 
         if (request.getCookies() != null) {
