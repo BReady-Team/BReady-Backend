@@ -19,6 +19,10 @@ public class AuthUtils {
 
         Object principal = authentication.getPrincipal();
 
+        if (principal == null) {
+            throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
+        }
+
         if (principal instanceof Long) {
             return (Long) principal;
         }
