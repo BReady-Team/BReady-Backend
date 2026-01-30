@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -56,38 +55,29 @@ public class KakaoAuthService {
         }
 
         String providerUserId = String.valueOf(userInfo.getId());
-        String email = userInfo.getKakaoAccount() == null
-                ? null
-                : userInfo.getKakaoAccount().getEmail();
 
-        if (email == null || email.isBlank()) {
-            throw new ApplicationException(UserErrorCase.KAKAO_EMAIL_CONSENT_REQUIRED);
-        }
-
-        // LOCAL 계정과 이메일 충돌 시 차단
-        userRepository.findByEmail(email).ifPresent(u -> {
-            if (u.getAuthProvider() == UserAuthProvider.LOCAL) {
-                throw new ApplicationException(UserErrorCase.DUPLICATED_EMAIL);
-            }
-        });
-
-        String nickname = userInfo.getProperties() != null
-                ? userInfo.getProperties().getNickname()
-                : null;
-
-        if (nickname == null || nickname.isBlank()) {
-            nickname = generateRandomNickname();
-        }
-
-        // 사용자 조회 or 생성
-        User user;
-        boolean isNewUser = false;
-
-        user = userRepository
+        User user = userRepository
                 .findByAuthProviderAndProviderUserId(UserAuthProvider.KAKAO, providerUserId)
                 .orElse(null);
 
+        boolean isNewUser = false;
+
         if (user == null) {
+
+            String email = (userInfo.getKakaoAccount() == null) ? null : userInfo.getKakaoAccount().getEmail();
+            if (email == null || email.isBlank()) {
+                throw new ApplicationException(UserErrorCase.KAKAO_EMAIL_CONSENT_REQUIRED);
+            }
+
+            if (userRepository.existsByEmail(email)) {
+                throw new ApplicationException(UserErrorCase.DUPLICATED_EMAIL);
+            }
+
+            String nickname = (userInfo.getProperties() == null) ? null : userInfo.getProperties().getNickname();
+            if (nickname == null || nickname.isBlank()) {
+                nickname = generateRandomNickname();
+            }
+
             isNewUser = true;
             try {
                 user = userRepository.save(
@@ -105,15 +95,16 @@ public class KakaoAuthService {
         // 토큰 발급
         TokenResponse tokens = tokenIssuer.issue(user.getId());
 
-        // 응답 생성
-        String joinedAt = user.getCreatedAt() == null ? null
-                : user.getCreatedAt()
-                .atOffset(ZoneOffset.UTC)
+        User userWithProfile = userRepository.findByIdWithProfile(user.getId())
+                .orElseThrow(() -> new ApplicationException(AuthErrorCase.INVALID_KAKAO_AUTH));
+
+        String joinedAt = userWithProfile.getCreatedAt() == null ? null
+                : userWithProfile.getCreatedAt().atOffset(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        String finalNickname = user.getUserProfile() != null
-                ? user.getUserProfile().getNickname()
-                : nickname;
+        String nicknameForResponse = userWithProfile.getUserProfile() != null
+                ? userWithProfile.getUserProfile().getNickname()
+                : null;
 
         return KakaoLoginResponse.builder()
                 .accessToken(tokens.getAccessToken())
@@ -121,7 +112,7 @@ public class KakaoAuthService {
                 .isNewUser(isNewUser)
                 .user(KakaoLoginResponse.UserDto.builder()
                         .userId(user.getId())
-                        .nickname(finalNickname)
+                        .nickname(nicknameForResponse)
                         .email(user.getEmail())
                         .joinedAt(joinedAt)
                         .build())
