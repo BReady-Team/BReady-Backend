@@ -2,7 +2,7 @@ package com.bready.server.auth.client;
 
 import com.bready.server.auth.config.KakaoOAuthProperties;
 import com.bready.server.auth.dto.KakaoTokenResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -11,14 +11,20 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-@RequiredArgsConstructor
 public class KakaoOAuthClient {
 
     private static final String TOKEN_URI = "https://kauth.kakao.com/oauth/token";
 
     private final KakaoOAuthProperties properties;
+    private final WebClient webClient;
 
-    private final WebClient webClient = WebClient.builder().build();
+    public KakaoOAuthClient(
+            KakaoOAuthProperties properties,
+            @Qualifier("kakaoWebClient") WebClient webClient
+    ) {
+        this.properties = properties;
+        this.webClient = webClient;
+    }
 
     public KakaoTokenResponse getToken(String authorizationCode) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
