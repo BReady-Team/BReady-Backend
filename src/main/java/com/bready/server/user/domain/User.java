@@ -48,6 +48,10 @@ public class User extends BaseEntity {
     }
 
     public static User createSocial(UserAuthProvider provider, String providerUserId, String email) {
+        if (providerUserId == null || providerUserId.isBlank()) {
+            throw new IllegalArgumentException("providerUserId must not be blank");
+        }
+
         User user = new User();
         user.email = email;
         user.password = null;
