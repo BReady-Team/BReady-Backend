@@ -32,7 +32,6 @@ public class KakaoAuthService {
     private final UserProfileRepository userProfileRepository;
     private final TokenIssuer tokenIssuer;
 
-    @Transactional
     public KakaoLoginResponse login(KakaoLoginRequest request) {
 
         // 인가 코드 검증
@@ -53,6 +52,12 @@ public class KakaoAuthService {
         if (userInfo.getId() == null) {
             throw new ApplicationException(AuthErrorCase.INVALID_KAKAO_AUTH);
         }
+
+        return processKakaoLogin(userInfo);
+    }
+
+    @Transactional
+    protected KakaoLoginResponse processKakaoLogin(KakaoUserInfoResponse userInfo) {
 
         String providerUserId = String.valueOf(userInfo.getId());
 
