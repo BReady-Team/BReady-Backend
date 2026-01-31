@@ -61,10 +61,16 @@ public class KakaoAuthTransactionHandler {
                 );
                 userProfileRepository.save(UserProfile.create(user, nickname));
             } catch (DataIntegrityViolationException e) {
+                if (userRepository.existsByEmail(email)) {
+                    throw new ApplicationException(UserErrorCase.DUPLICATED_EMAIL);
+                }
+
+                isNewUser = false;
+
                 user = userRepository
                         .findByAuthProviderAndProviderUserId(UserAuthProvider.KAKAO, providerUserId)
                         .orElseThrow(() -> e);
-                isNewUser = false;
+
             }
         }
 
