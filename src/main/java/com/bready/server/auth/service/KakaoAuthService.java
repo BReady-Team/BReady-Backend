@@ -33,7 +33,7 @@ public class KakaoAuthService {
     private final TokenIssuer tokenIssuer;
 
     @Transactional
-    public KakaoLoginResponse login(KaKaoLoginRequest request) {
+    public KakaoLoginResponse login(KakaoLoginRequest request) {
 
         // 인가 코드 검증
         String code = request.getCode();

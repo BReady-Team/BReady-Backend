@@ -102,7 +102,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     public CommonResponse<KakaoLoginResponse> kakaoLogin(
-            @Valid @RequestBody KaKaoLoginRequest request
+            @Valid @RequestBody KakaoLoginRequest request
     ) {
         return CommonResponse.success(kakaoAuthService.login(request));
     }
