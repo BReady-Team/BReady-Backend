@@ -19,7 +19,10 @@ public enum UserErrorCase implements ErrorCase {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 4041, "사용자 정보를 찾을 수 없습니다."),
 
     // 회원가입 이메일 중복
-    DUPLICATED_EMAIL(HttpStatus.CONFLICT, 4091, "이미 사용 중인 이메일입니다.");
+    DUPLICATED_EMAIL(HttpStatus.CONFLICT, 4091, "이미 사용 중인 이메일입니다."),
+
+    // 소셜 로그인
+    KAKAO_EMAIL_CONSENT_REQUIRED(HttpStatus.BAD_REQUEST, 4104, "이메일 제공에 동의해야 가입/로그인이 가능합니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;

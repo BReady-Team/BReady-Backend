@@ -1,11 +1,8 @@
 package com.bready.server.auth.controller;
 
-import com.bready.server.auth.dto.LoginRequest;
-import com.bready.server.auth.dto.RefreshRequest;
-import com.bready.server.auth.dto.SignupRequest;
-import com.bready.server.auth.dto.SignupResponse;
-import com.bready.server.auth.dto.TokenResponse;
+import com.bready.server.auth.dto.*;
 import com.bready.server.auth.service.AuthService;
+import com.bready.server.auth.service.KakaoAuthService;
 import com.bready.server.global.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-
     private final AuthService authService;
+    private final KakaoAuthService kakaoAuthService;
 
 
     @PostMapping("/signup")
@@ -86,5 +83,27 @@ public class AuthController {
             @Valid @RequestBody RefreshRequest request
     ) {
         return CommonResponse.success(authService.refresh(request));
+    }
+
+    @PostMapping("/kakao/login")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "카카오 로그인",
+            description = "인가 코드로 카카오 인증 후 access, refresh 토큰 발급, 사용자 정보 반환"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "카카오 로그인 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "이메일 제공 동의 필수",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 카카오 인증 정보",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "502", description = "카카오 인증 서버 통신 실패",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<KakaoLoginResponse> kakaoLogin(
+            @Valid @RequestBody KakaoLoginRequest request
+    ) {
+        return CommonResponse.success(kakaoAuthService.login(request));
     }
 }

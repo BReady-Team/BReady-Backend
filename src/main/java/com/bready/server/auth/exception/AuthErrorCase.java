@@ -20,8 +20,11 @@ public enum AuthErrorCase implements ErrorCase {
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, 4011, "이메일 또는 비밀번호가 올바르지 않습니다."),
 
     // refresh 전용
-    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, 4012, "리프레시 토큰이 유효하지 않습니다.");
+    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, 4012, "리프레시 토큰이 유효하지 않습니다."),
 
+    // 카카오 소셜 로그인
+    INVALID_KAKAO_AUTH(HttpStatus.UNAUTHORIZED, 4013,"유효하지 않은 카카오 인증 정보입니다."),
+    KAKAO_API_COMMUNICATION_FAILED(HttpStatus.BAD_GATEWAY, 5021, "카카오 인증 서버와 통신에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;
