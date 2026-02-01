@@ -57,9 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // TODO: 로그인,회원가입 API 구현 후 .anyRequest().authenticated() 로 변경
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider),
@@ -68,6 +66,7 @@ public class SecurityConfig {
                 // 기본 인증 방식 비활성화
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
+
         return http.build();
     }
 
