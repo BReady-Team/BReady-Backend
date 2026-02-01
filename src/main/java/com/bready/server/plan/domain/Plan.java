@@ -31,4 +31,14 @@ public class Plan extends BaseEntity {
 
     @Column(nullable = false)
     private String status;
+
+    public static Plan create(Long ownerId, String title, LocalDate planDate, String region) {
+        Plan plan = new Plan();
+        plan.ownerId = ownerId;
+        plan.title = title;
+        plan.planDate = planDate;
+        plan.region = region;
+        plan.status = "ACTIVE";
+        return plan;
+    }
 }
