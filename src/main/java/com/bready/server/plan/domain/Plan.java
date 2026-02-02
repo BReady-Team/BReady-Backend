@@ -41,4 +41,10 @@ public class Plan extends BaseEntity {
         plan.status = "ACTIVE";
         return plan;
     }
+
+    public void update(String title, LocalDate planDate, String region) {
+        this.title = title;
+        this.planDate = planDate;
+        this.region = region;
+    }
 }
