@@ -1,10 +1,12 @@
 package com.bready.server.global.exception;
 
 import com.bready.server.global.response.CommonResponse;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -38,6 +40,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(CommonResponse.error(4001, message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CommonResponse<?>> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+        Throwable cause = e.getCause();
+
+        if (cause instanceof InvalidFormatException) {
+            log.warn("[HttpMessageNotReadable] {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(CommonResponse.error(4006, "planDate 형식이 올바르지 않습니다."));
+        }
+
+        log.warn("[HttpMessageNotReadable] {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(CommonResponse.error(4001, "요청 값이 유효하지 않습니다."));
     }
 
     @ExceptionHandler(AuthenticationException.class)
