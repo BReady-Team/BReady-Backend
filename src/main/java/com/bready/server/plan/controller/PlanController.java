@@ -62,7 +62,7 @@ public class PlanController {
             @ApiResponse(responseCode = "401", description = "인증 필요",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "403", description = "플랜 수정 권한 없음",
-                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "404", description = "플랜 없음",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "500", description = "플랜 수정 실패 (서버 오류)",
