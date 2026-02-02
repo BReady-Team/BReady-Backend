@@ -2,10 +2,7 @@ package com.bready.server.plan.service;
 
 import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.plan.domain.Plan;
-import com.bready.server.plan.dto.PlanCreateRequest;
-import com.bready.server.plan.dto.PlanCreateResponse;
-import com.bready.server.plan.dto.PlanUpdateRequest;
-import com.bready.server.plan.dto.PlanUpdateResponse;
+import com.bready.server.plan.dto.*;
 import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +45,32 @@ public class PlanService {
         return PlanUpdateResponse.builder()
                 .planId(plan.getId())
                 .updatedAt(plan.getUpdatedAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PlanDetailResponse getPlanDetail(Long userId, Long planId) {
+
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        // TODO : 플랜 공유 기능 도입 시 소유자 외에도 조회 권한 허용
+        if (!plan.getOwnerId().equals(userId)) {
+            throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
+        }
+
+        PlanDto planDto = PlanDto.builder()
+                .planId(plan.getId())
+                .title(plan.getTitle())
+                .planDate(plan.getPlanDate())
+                .region(plan.getRegion())
+                .status(plan.getStatus())
+                .createdAt(plan.getCreatedAt())
+                .updatedAt(plan.getUpdatedAt())
+                .build();
+
+        return PlanDetailResponse.builder()
+                .plan(planDto)
                 .build();
     }
 }
