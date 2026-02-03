@@ -26,17 +26,17 @@ public class TriggerStatsService {
 
         long totalCount = triggerRepository.countByOwnerIdAndPeriod(userId, startAt);
 
-        Map<TriggerType, Long> countMap = triggerRepository
-                .countByTriggerType(userId, startAt)
-                .stream()
-                .collect(Collectors.toMap(
-                        row -> (TriggerType) row[0],
-                        row -> (Long) row[1]
-                ));
+        Map<TriggerType, Long> countsByType =
+                triggerRepository.countByTriggerType(userId, startAt)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                TriggerRepository.TriggerTypeCount::getTriggerType,
+                                TriggerRepository.TriggerTypeCount::getCount
+                        ));
 
         List<TriggerStatsItem> items = Arrays.stream(TriggerType.values())
                 .map(type -> {
-                    long count = countMap.getOrDefault(type, 0L);
+                    long count = countsByType.getOrDefault(type, 0L);
                     int percentage = totalCount == 0
                             ? 0
                             : (int) Math.round((double) count * 100 / totalCount);
