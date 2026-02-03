@@ -22,13 +22,13 @@ public class StatsService {
     private final SwitchLogRepository switchLogRepository;
     private final TriggerRepository triggerRepository;
 
-    public StatsSummaryResponse getSummary(Long userId, StatsPeriod period) {
+    public StatsSummaryResponse getSummary(Long ownerId, StatsPeriod period) {
 
         LocalDateTime startAt = resolveStartAt(period);
 
-        long totalPlans = planRepository.countByOwnerId(userId);
-        long totalSwitches = switchLogRepository.countByUserIdAndPeriod(userId, startAt);
-        long recentCount = triggerRepository.countByUserIdAndPeriod(userId, startAt);
+        long totalPlans = planRepository.countByOwnerId(ownerId);
+        long totalSwitches = switchLogRepository.countByOwnerIdAndPeriod(ownerId, startAt);
+        long recentCount = triggerRepository.countByOwnerIdAndPeriod(ownerId, startAt);
 
         double avgSwitchesPerPlan = calculateAvg(totalSwitches, totalPlans);
 
@@ -52,7 +52,6 @@ public class StatsService {
 
     private double calculateAvg(long totalSwitches, long totalPlans) {
         if (totalPlans == 0) return 0.0;
-
         // 소수점 1자리 반올림
         return BigDecimal.valueOf((double) totalSwitches / totalPlans)
                 .setScale(1, RoundingMode.HALF_UP)
