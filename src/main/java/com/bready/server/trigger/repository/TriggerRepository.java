@@ -26,7 +26,7 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
 
     // 트리거 타입별 발생 수 (분석 통계)
     @Query("""
-        select t.triggerType, count(t)
+        select t.triggerType as triggerType, count(t) as count
         from Trigger t
         join t.plan p
         where p.ownerId = :ownerId
