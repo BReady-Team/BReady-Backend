@@ -1,4 +1,4 @@
-package com.bready.server.trigger.dto;
+package com.bready.server.stats.dto;
 
 import com.bready.server.trigger.domain.TriggerType;
 import lombok.Builder;
