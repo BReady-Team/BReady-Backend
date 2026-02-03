@@ -8,10 +8,11 @@ import java.time.LocalDateTime;
 
 public interface TriggerRepository extends JpaRepository<Trigger, Long> {
     @Query("""
-    select count(t)
-    from Trigger t
-    where t.plan.ownerId = :userId
-      and (:startAt is null or t.occurredAt >= :startAt)
+        select count(t)
+        from Trigger t
+        join t.plan p
+        where p.ownerId = :ownerId
+          and (:startAt is null or t.occurredAt >= :startAt)
     """)
-    long countByUserIdAndPeriod(Long userId, LocalDateTime startAt);
+    long countByOwnerIdAndPeriod(Long ownerId, LocalDateTime startAt);
 }
