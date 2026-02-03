@@ -1,8 +1,10 @@
 package com.bready.server.trigger.repository;
 
+import com.bready.server.stats.domain.TriggerTypeCount;
 import com.bready.server.trigger.domain.Trigger;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +18,7 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
         where p.ownerId = :ownerId
           and (:startAt is null or t.occurredAt >= :startAt)
     """)
-    long countByOwnerIdAndPeriod(Long ownerId, LocalDateTime startAt);
+    long countByOwnerIdAndPeriod(@Param("ownerId") Long ownerId, @Param("startAt") LocalDateTime startAt);
 
     // 트리거 타입별 발생 수 (분석 통계)
     @Query("""
@@ -27,5 +29,5 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
           and (:startAt is null or t.occurredAt >= :startAt)
         group by t.triggerType
     """)
-    List<Object[]> countByTriggerType(Long ownerId, LocalDateTime startAt);
+    List<TriggerTypeCount> countByTriggerType(@Param("ownerId") Long ownerId, @Param("startAt") LocalDateTime startAt);
 }
