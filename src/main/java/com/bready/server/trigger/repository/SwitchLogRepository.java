@@ -2,13 +2,13 @@ package com.bready.server.trigger.repository;
 
 import com.bready.server.trigger.domain.SwitchLog;
 import com.bready.server.trigger.domain.TriggerType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
     interface SwitchActivityRow {
@@ -30,7 +30,7 @@ public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
           and p.ownerId = :ownerId
         order by sl.createdAt desc
     """)
-    List<SwitchActivityRow> findRecentSwitchActivities(
+    Page<SwitchActivityRow> findRecentSwitchActivities(
             @Param("ownerId") Long ownerId,
             @Param("planId") Long planId,
             Pageable pageable
