@@ -9,12 +9,20 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long> {
+    interface PlanCategoryTypeRow {
+        Long getPlanId();
+        String getCategoryType();
+    }
+
     @Query("""
-    select pc.plan.id, pc.categoryType
-    from PlanCategory pc
-    where pc.plan.ownerId = :ownerId
+        select
+            pc.plan.id as planId,
+            pc.categoryType as categoryType
+        from PlanCategory pc
+        join pc.plan p
+        where p.ownerId = :ownerId
     """)
-    List<Object[]> findCategoryTypesByOwner(@Param("ownerId") Long ownerId);
+    List<PlanCategoryTypeRow> findCategoryTypesByOwner(@Param("ownerId") Long ownerId);
 
     // 장소 후보쪽에서 category가 plan에 속하는지 검증하기 위해서 추가
     Optional<PlanCategory> findByIdAndPlan_Id(Long id, Long planId);
