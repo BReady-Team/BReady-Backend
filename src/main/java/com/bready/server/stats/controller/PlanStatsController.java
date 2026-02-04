@@ -11,7 +11,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stats")
+@Validated
 public class PlanStatsController {
 
     private final PlanListStatsService planListStatsService;
@@ -41,9 +46,9 @@ public class PlanStatsController {
             @Parameter(hidden = true)
             @CurrentUser Long ownerId,
             @Parameter(description = "조회 기간 (WEEK | MONTH | ALL)", example = "ALL")
-            @RequestParam StatsPeriod period,
+            @RequestParam @NotNull StatsPeriod period,
             @Parameter(description = "목록 개수 (기본 20, 최대 50)", example = "20")
-            @RequestParam(required = false) Integer limit
+            @RequestParam(required = false) @Positive @Max(50) Integer limit
     ) {
         return CommonResponse.success(planListStatsService.getPlanStats(ownerId, period, limit));
     }

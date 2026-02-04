@@ -5,11 +5,12 @@ import com.bready.server.global.response.CommonResponse;
 import com.bready.server.stats.dto.PlanActivitiesResponse;
 import com.bready.server.stats.service.PlanActivityStatsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -40,7 +41,7 @@ public class PlanActivityStatsController {
             @CurrentUser Long userId,
             @PathVariable @Positive Long planId,
             @Parameter(description = "최근 N개 (기본 5, 최대 20)", example = "5")
-            @RequestParam(required = false) Integer limit
+            @RequestParam(required = false) @Positive @Max(20) Integer limit
     ) {
         return CommonResponse.success(planActivityStatsService.getPlanActivities(userId, planId, limit));
     }
