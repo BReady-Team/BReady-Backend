@@ -47,8 +47,10 @@ public class PlanActivityStatsService {
         List<PlanActivityItem> merged = new ArrayList<>();
 
         for (SwitchLogRepository.SwitchActivityRow row : switchRows) {
+            String activityId = "SWITCH-" + row.getLogId();
+
             merged.add(PlanActivityItem.builder()
-                    .logId(row.getLogId())
+                    .activityId(activityId)
                     .triggerType(row.getTriggerType())
                     .decisionType(DecisionType.SWITCH)
                     .createdAt(row.getCreatedAt())
@@ -56,8 +58,10 @@ public class PlanActivityStatsService {
         }
 
         for (DecisionRepository.KeepDecisionActivityRow row : keepRows) {
+            String activityId = "KEEP-" + row.getLogId();
+
             merged.add(PlanActivityItem.builder()
-                    .logId(row.getLogId())
+                    .activityId(activityId)
                     .triggerType(row.getTriggerType())
                     .decisionType(DecisionType.KEEP)
                     .createdAt(row.getCreatedAt())

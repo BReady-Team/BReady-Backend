@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record PlanActivityItem(
-        Long logId,
+        String activityId,
         TriggerType triggerType,
         DecisionType decisionType,
         LocalDateTime createdAt
