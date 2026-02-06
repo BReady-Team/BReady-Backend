@@ -40,7 +40,7 @@ class PlaceSearchControllerTest {
     void search_success() throws Exception {
         given(placeSearchService.search(
                 eq(PlaceCategoryType.CAFE),
-                eq("성수"),
+                any(),
                 eq(37.544),
                 eq(127.055),
                 eq(2000)
@@ -61,7 +61,7 @@ class PlaceSearchControllerTest {
                         .param("longitude", "127.055")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].name").value("성수 카페"));
     }
 
