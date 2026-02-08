@@ -112,4 +112,29 @@ public class PlanService {
                 .pageInfo(pageInfo)
                 .build();
     }
+
+    @Transactional
+    public PlanDeleteResponse deletePlan(Long userId, Long planId) {
+
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        if (!plan.getOwnerId().equals(userId)) {
+            throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
+        }
+
+        if (plan.isDeleted()) {
+            return PlanDeleteResponse.builder()
+                    .planId(plan.getId())
+                    .deletedAt(plan.getDeletedAt())
+                    .build();
+        }
+
+        plan.softDelete();
+
+        return PlanDeleteResponse.builder()
+                .planId(plan.getId())
+                .deletedAt(plan.getDeletedAt())
+                .build();
+    }
 }
