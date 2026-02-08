@@ -98,4 +98,27 @@ public class PlanController {
     ) {
         return CommonResponse.success(planService.getPlanDetail(userId, planId));
     }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "내 플랜 목록 조회",
+            description = "인증된 사용자의 플랜 목록 조회"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 필요",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+    })
+    public CommonResponse<PlanListResponse> getMyPlans(
+            @CurrentUser Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "desc") String order
+    ) {
+        return CommonResponse.success(planService.getMyPlans(userId, page, size, order));
+    }
 }
