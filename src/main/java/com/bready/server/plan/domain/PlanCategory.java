@@ -1,6 +1,7 @@
 package com.bready.server.plan.domain;
 
 import com.bready.server.global.entity.BaseEntity;
+import com.bready.server.place.domain.PlaceCategoryType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +18,8 @@ public class PlanCategory extends BaseEntity {
     private Long id;
 
     @Column(name = "category_type", nullable = false)
-    private String categoryType;
+    @Enumerated(EnumType.STRING)
+    private PlaceCategoryType categoryType;
 
     @Column(nullable = false)
     private Integer sequence;

@@ -56,6 +56,7 @@ class PlaceSearchServiceTest {
         List<PlaceSearchResponse> result =
                 placeSearchService.search(
                         PlaceCategoryType.CAFE,
+                        "성수",
                         37.544,
                         127.055,
                         2000
@@ -80,6 +81,7 @@ class PlaceSearchServiceTest {
         assertThatThrownBy(() ->
                 placeSearchService.search(
                         PlaceCategoryType.CAFE,
+                        "성수",
                         37.0,
                         127.0,
                         2000
