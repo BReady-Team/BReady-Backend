@@ -49,11 +49,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonResponse<?>> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
         Throwable cause = e.getCause();
 
-        if (cause instanceof InvalidFormatException) {
+        if (cause instanceof InvalidFormatException ife) {
+            String fieldName = ife.getPath().isEmpty()
+                    ? null
+                    : ife.getPath().get(ife.getPath().size() - 1).getFieldName();
+
             log.warn("[HttpMessageNotReadable] {}", e.getMessage());
+
+            if ("planDate".equals(fieldName)) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(CommonResponse.error(4006, "planDate 형식이 올바르지 않습니다."));
+            }
+
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(CommonResponse.error(4006, "planDate 형식이 올바르지 않습니다."));
+                    .body(CommonResponse.error(4001, "요청 값이 유효하지 않습니다."));
         }
 
         log.warn("[HttpMessageNotReadable] {}", e.getMessage());
