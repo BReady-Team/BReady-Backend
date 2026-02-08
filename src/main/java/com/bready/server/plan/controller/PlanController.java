@@ -89,7 +89,7 @@ public class PlanController {
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "404", description = "플랜 없음",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-            @ApiResponse(responseCode = "500", description = "플랜 수정 실패 (서버 오류)",
+            @ApiResponse(responseCode = "500", description = "플랜 조회 실패 (서버 오류)",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     public CommonResponse<PlanDetailResponse> getPlanDetail(
