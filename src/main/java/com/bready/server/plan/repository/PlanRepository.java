@@ -11,8 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import java.time.LocalDateTime;
-
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     Page<Plan> findAllByOwnerIdAndDeletedAtIsNull(Long ownerId, Pageable pageable);
@@ -59,4 +57,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         where p.ownerId = :ownerId
     """)
     long countByOwnerId(@Param("ownerId") Long ownerId);
+
+    Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
+
 }

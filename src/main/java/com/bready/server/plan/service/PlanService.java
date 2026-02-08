@@ -36,7 +36,7 @@ public class PlanService {
 
     @Transactional
     public PlanUpdateResponse updatePlan(Long userId, Long planId, PlanUpdateRequest request) {
-        Plan plan = planRepository.findById(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
@@ -57,7 +57,7 @@ public class PlanService {
     @Transactional(readOnly = true)
     public PlanDetailResponse getPlanDetail(Long userId, Long planId) {
 
-        Plan plan = planRepository.findById(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         // TODO : 플랜 공유 기능 도입 시 소유자 외에도 조회 권한 허용
@@ -116,18 +116,11 @@ public class PlanService {
     @Transactional
     public PlanDeleteResponse deletePlan(Long userId, Long planId) {
 
-        Plan plan = planRepository.findById(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
             throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
-        }
-
-        if (plan.isDeleted()) {
-            return PlanDeleteResponse.builder()
-                    .planId(plan.getId())
-                    .deletedAt(plan.getDeletedAt())
-                    .build();
         }
 
         plan.softDelete();
