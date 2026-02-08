@@ -6,8 +6,14 @@ import com.bready.server.plan.dto.*;
 import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +77,39 @@ public class PlanService {
 
         return PlanDetailResponse.builder()
                 .plan(planDto)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PlanListResponse getMyPlans(Long userId, int page, int size, String order) {
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "planDate"));
+
+        Page<Plan> result = planRepository.findAllByOwnerIdAndDeletedAtIsNull(userId, pageable);
+
+        List<PlanListItemDto> items = result.getContent().stream()
+                .map(plan -> PlanListItemDto.builder()
+                        .planId(plan.getId())
+                        .title(plan.getTitle())
+                        .planDate(plan.getPlanDate())
+                        .region(plan.getRegion())
+                        .status(plan.getStatus())
+                        .createdAt(plan.getCreatedAt())
+                        .updatedAt(plan.getUpdatedAt())
+                        .build())
+                .toList();
+
+        PageInfo pageInfo = PageInfo.builder()
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .build();
+
+        return PlanListResponse.builder()
+                .items(items)
+                .pageInfo(pageInfo)
                 .build();
     }
 }
