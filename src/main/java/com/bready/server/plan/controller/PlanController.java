@@ -45,7 +45,7 @@ public class PlanController {
     }
 
 
-    @PostMapping("/{planId}")
+    @PatchMapping("/{planId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "플랜 수정",
