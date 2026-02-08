@@ -84,7 +84,7 @@ public class PlanService {
     public PlanListResponse getMyPlans(Long userId, int page, int size, String order) {
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "planDate"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "planDate").and(Sort.by(Sort.Direction.DESC, "createdAt")));
 
         Page<Plan> result = planRepository.findAllByOwnerIdAndDeletedAtIsNull(userId, pageable);
 
