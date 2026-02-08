@@ -124,7 +124,7 @@ public class PlanController {
     }
 
 
-    @DeleteMapping("/{planId")
+    @DeleteMapping("/{planId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "플랜 삭제",
