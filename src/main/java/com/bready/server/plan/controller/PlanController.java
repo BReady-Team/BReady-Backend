@@ -99,6 +99,7 @@ public class PlanController {
         return CommonResponse.success(planService.getPlanDetail(userId, planId));
     }
 
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -121,4 +122,28 @@ public class PlanController {
     ) {
         return CommonResponse.success(planService.getMyPlans(userId, page, size, order));
     }
+
+
+    @DeleteMapping("/{planId")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "플랜 삭제",
+            description = "인증된 사용자가 본인의 플랜 삭제 (soft delete)"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "플랜 삭제 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 필요",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "403", description = "플랜 삭제 권한 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "404", description = "플랜 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<PlanDeleteResponse> deletePlan(@CurrentUser Long userId, @PathVariable Long planId) {
+        return CommonResponse.success(planService.deletePlan(userId, planId));
+    }
+
 }
