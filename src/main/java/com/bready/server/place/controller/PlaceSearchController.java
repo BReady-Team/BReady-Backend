@@ -59,6 +59,7 @@ public class PlaceSearchController {
                     example = "CAFE"
             )
             @RequestParam PlaceCategoryType category,
+            @RequestParam(required = false) String keyword,
 
             @Parameter(
                     name = "latitude",
@@ -98,7 +99,7 @@ public class PlaceSearchController {
         }
 
         List<PlaceSearchResponse> results =
-                placeSearchService.search(category, latitude, longitude, radius);
+                placeSearchService.search(category, keyword, latitude, longitude, radius);
 
         // 결과 없으면 에러 처리
         if (results.isEmpty()) {

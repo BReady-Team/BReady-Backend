@@ -40,6 +40,7 @@ class PlaceSearchControllerTest {
     void search_success() throws Exception {
         given(placeSearchService.search(
                 eq(PlaceCategoryType.CAFE),
+                any(),
                 eq(37.544),
                 eq(127.055),
                 eq(2000)
@@ -60,7 +61,7 @@ class PlaceSearchControllerTest {
                         .param("longitude", "127.055")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].name").value("성수 카페"));
     }
 
@@ -79,7 +80,7 @@ class PlaceSearchControllerTest {
     @Test
     @DisplayName("결과 없음 → PLACE_NOT_FOUND")
     void search_empty_result() throws Exception {
-        given(placeSearchService.search(any(), any(), any(), any()))
+        given(placeSearchService.search(any(), any(), any(), any(), any()))
                 .willReturn(List.of());
 
         mockMvc.perform(get("/api/v1/places/search")
