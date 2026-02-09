@@ -1,6 +1,7 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.Plan;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
+
+    Page<Plan> findAllByOwnerIdAndDeletedAtIsNull(Long ownerId, Pageable pageable);
+
     interface PlanSwitchStatsRow {
         Long getPlanId();
         String getPlanTitle();
@@ -53,4 +57,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         where p.ownerId = :ownerId
     """)
     long countByOwnerId(@Param("ownerId") Long ownerId);
+
+    Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
+
 }
