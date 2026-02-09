@@ -26,4 +26,6 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
 
     // 장소 후보쪽에서 category가 plan에 속하는지 검증하기 위해서 추가
     Optional<PlanCategory> findByIdAndPlan_Id(Long id, Long planId);
+
+    Optional<PlanCategory> findByIdAndPlan_IdAndDeletedAtIsNull(Long id, Long planId);
 }
