@@ -118,7 +118,7 @@ public class PlanController {
             @CurrentUser Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "desc") String order
+            @RequestParam(defaultValue = "DESC") SortDirection order
     ) {
         return CommonResponse.success(planService.getMyPlans(userId, page, size, order));
     }
