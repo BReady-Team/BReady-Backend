@@ -27,4 +27,12 @@ public class PlanCategory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan; // plan과의 연관관계 설정 (1:N)
+
+    public static PlanCategory create(Plan plan, PlaceCategoryType categoryType, Integer sequence) {
+        PlanCategory category = new PlanCategory();
+        category.plan = plan;
+        category.categoryType = categoryType;
+        category.sequence = sequence;
+        return category;
+    }
 }
