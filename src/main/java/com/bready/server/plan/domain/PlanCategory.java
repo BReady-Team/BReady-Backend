@@ -35,4 +35,8 @@ public class PlanCategory extends BaseEntity {
         category.sequence = sequence;
         return category;
     }
+
+    public void updateSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 }
