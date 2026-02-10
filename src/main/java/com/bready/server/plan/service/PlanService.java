@@ -4,6 +4,7 @@ import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.dto.*;
 import com.bready.server.plan.exception.PlanErrorCase;
+import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import java.util.List;
 public class PlanService {
 
     private final PlanRepository planRepository;
+    private final PlanCategoryRepository planCategoryRepository;
 
     @Transactional
     public PlanCreateResponse createPlan(Long userId, PlanCreateRequest request) {
@@ -75,8 +77,19 @@ public class PlanService {
                 .updatedAt(plan.getUpdatedAt())
                 .build();
 
+        List<PlanCategoryItemDto> categories = planCategoryRepository
+                .findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(planId)
+                .stream()
+                .map(pc -> PlanCategoryItemDto.builder()
+                        .planCategoryId(pc.getId())
+                        .categoryType(pc.getCategoryType())
+                        .sequence(pc.getSequence())
+                        .build())
+                .toList();
+
         return PlanDetailResponse.builder()
                 .plan(planDto)
+                .categories(categories)
                 .build();
     }
 
