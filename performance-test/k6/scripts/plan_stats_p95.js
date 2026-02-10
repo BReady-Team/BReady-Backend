@@ -36,12 +36,13 @@ export default function () {
     const params = {
         headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${__ENV.ACCESS_TOKEN}`,
         },
         timeout: "10s",
     };
 
     const joinRes = http.get(
-        `${BASE_URL}/api/v1/plans/stats?period=WEEK&limit=10&mode=join`,
+        `${BASE_URL}/api/v1/stats/plans?period=WEEK&limit=10`,
         params
     );
 
@@ -49,9 +50,12 @@ export default function () {
         "JOIN status 200": (r) => r.status === 200,
     });
 
+    if (joinRes.status !== 200) {
+        console.log(`JOIN FAILED: ${joinRes.status}`);
+    }
 
     const matRes = http.get(
-        `${BASE_URL}/api/v1/plans/stats?period=WEEK&limit=10&mode=mat`,
+        `${BASE_URL}/api/v1/stats/plans/materialized?period=WEEK&limit=10`,
         params
     );
 
