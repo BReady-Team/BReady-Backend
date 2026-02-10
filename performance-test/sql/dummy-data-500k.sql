@@ -101,3 +101,9 @@ FROM decisions d
 WHERE d.decision_type = 'SWITCH';
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+ANALYZE TABLE triggers;
+ANALYZE TABLE decisions;
+ANALYZE TABLE switch_logs;
+ANALYZE TABLE plans;
