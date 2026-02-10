@@ -28,4 +28,7 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     Optional<PlanCategory> findByIdAndPlan_Id(Long id, Long planId);
 
     Optional<PlanCategory> findByIdAndPlan_IdAndDeletedAtIsNull(Long id, Long planId);
+
+    // 플랜 상세 조회에서 categories 조회용 (soft delete 차단 + sequence 정렬)
+    List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
 }
