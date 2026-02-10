@@ -55,10 +55,10 @@ SELECT
     ELT(
             FLOOR(1 + RAND() * 5),
             'WEATHER_BAD',
-            'WAITING_LONG',
-            'CLOSED',
+            'WAITING_TOO_LONG',
+            'PLACE_CLOSED',
             'FATIGUE',
-            'DISTANCE_FAR'
+            'DISTANCE_TOO_FAR'
     ),
     NOW() - INTERVAL FLOOR(RAND() * 30) DAY,
     NOW(),
