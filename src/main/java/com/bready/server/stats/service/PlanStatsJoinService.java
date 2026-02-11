@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PlanListStatsService {
+public class PlanStatsJoinService {
 
     private static final int DEFAULT_LIMIT = 20;
     private static final int MAX_LIMIT = 50;
@@ -28,7 +28,7 @@ public class PlanListStatsService {
     private final PlanRepository planRepository;
     private final PlanCategoryRepository categoryRepository;
 
-    public PlanStatsResponse getPlanStats(
+    public PlanStatsResponse getStats(
             Long ownerId,
             StatsPeriod period,
             Integer limitParam
