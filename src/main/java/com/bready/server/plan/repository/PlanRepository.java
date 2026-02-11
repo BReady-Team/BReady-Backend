@@ -74,6 +74,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         SELECT id, title, plan_date, region
         FROM plans
         WHERE owner_id = :ownerId
+            AND deleted_at IS NULL
         ORDER BY plan_date DESC
         LIMIT :limit
     ) p
