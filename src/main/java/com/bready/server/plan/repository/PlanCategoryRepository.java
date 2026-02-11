@@ -24,6 +24,17 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     """)
     List<PlanCategoryTypeRow> findCategoryTypesByOwner(@Param("ownerId") Long ownerId);
 
+
+    // planIds로만 category 조회 (성능 개선)
+    @Query("""
+        select
+            pc.plan.id as planId,
+            pc.categoryType as categoryType
+        from PlanCategory pc
+        where pc.plan.id in :planIds
+    """)
+    List<PlanCategoryTypeRow> findCategoryTypesByPlanIds(@Param("planIds") List<Long> planIds);
+
     // 장소 후보쪽에서 category가 plan에 속하는지 검증하기 위해서 추가
     Optional<PlanCategory> findByIdAndPlan_Id(Long id, Long planId);
 }
