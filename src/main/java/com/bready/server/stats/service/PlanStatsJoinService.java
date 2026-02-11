@@ -38,7 +38,7 @@ public class PlanStatsJoinService {
 
         // JOIN 기반 통계 rows (limit만큼만)
         List<PlanRepository.PlanSwitchStatsRow> rows =
-                planRepository.findPlanSwitchStats(ownerId, pageable);
+                planRepository.findPlanSwitchStatsOptimized(ownerId, pageable);
 
         if (rows.isEmpty()) {
             return PlanStatsResponse.builder()
