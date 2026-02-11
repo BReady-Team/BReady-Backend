@@ -75,17 +75,17 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         FROM plans
         WHERE owner_id = :ownerId
         ORDER BY plan_date DESC
+        LIMIT :limit
     ) p
     LEFT JOIN triggers t ON t.plan_id = p.id
     LEFT JOIN decisions d ON d.trigger_id = t.id
     LEFT JOIN switch_logs sl ON sl.decision_id = d.id
     GROUP BY p.id, p.title, p.plan_date, p.region
     ORDER BY p.plan_date DESC
-    """,
-            nativeQuery = true)
+    """, nativeQuery = true)
     List<PlanSwitchStatsRow> findPlanSwitchStatsOptimized(
             @Param("ownerId") Long ownerId,
-            Pageable pageable
+            @Param("limit") int limit
     );
 
 }

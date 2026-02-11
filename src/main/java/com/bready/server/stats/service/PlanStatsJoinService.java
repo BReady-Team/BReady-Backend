@@ -8,8 +8,6 @@ import com.bready.server.stats.dto.PlanStatsItem;
 import com.bready.server.stats.dto.PlanStatsResponse;
 import com.bready.server.stats.exception.StatsErrorCase;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,11 +32,10 @@ public class PlanStatsJoinService {
             Integer limitParam
     ) {
         int limit = normalizeLimit(limitParam);
-        Pageable pageable = PageRequest.of(0, limit);
 
         // JOIN 기반 통계 rows (limit만큼만)
         List<PlanRepository.PlanSwitchStatsRow> rows =
-                planRepository.findPlanSwitchStatsOptimized(ownerId, pageable);
+                planRepository.findPlanSwitchStatsOptimized(ownerId, limit);
 
         if (rows.isEmpty()) {
             return PlanStatsResponse.builder()
