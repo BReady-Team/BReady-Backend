@@ -95,9 +95,6 @@ public class PlanCategoryService {
         }
 
         List<PlanCategoryOrderUpdateRequest.OrderItem> orders = request.getOrders();
-        if (orders == null || orders.isEmpty()) {
-            throw new ApplicationException(CategoryErrorCase.INVALID_ORDERS);
-        }
 
         // 중복, 누락 검증
         Set<Long> ids = orders.stream()
@@ -123,6 +120,22 @@ public class PlanCategoryService {
             throw new ApplicationException(CategoryErrorCase.INVALID_ORDERS);
         }
 
+        int n = orders.size();
+
+        Set<Integer> seqSet = orders.stream()
+                .map(PlanCategoryOrderUpdateRequest.OrderItem::getSequence)
+                .collect(Collectors.toSet());
+
+        if (seqSet.size() != n) {
+            throw new ApplicationException(CategoryErrorCase.INVALID_SEQUENCE);
+        }
+
+        for (int i = 1; i <= n; i++) {
+            if (!seqSet.contains(i)) {
+                throw new ApplicationException(CategoryErrorCase.INVALID_SEQUENCE);
+            }
+        }
+
         Map<Long, Integer> sequenceMap = orders.stream()
                 .collect(Collectors.toMap(
                         PlanCategoryOrderUpdateRequest.OrderItem::getPlanCategoryId,
@@ -131,9 +144,15 @@ public class PlanCategoryService {
 
         for (PlanCategory category : categories) {
             Integer seq = sequenceMap.get(category.getId());
-            if (seq == null || seq < 1) {
+
+            if (seq == null) {
+                throw new ApplicationException(CategoryErrorCase.INVALID_ORDERS);
+            }
+
+            if (seq < 1) {
                 throw new ApplicationException(CategoryErrorCase.INVALID_SEQUENCE);
             }
+
             category.updateSequence(seq);
         }
 
