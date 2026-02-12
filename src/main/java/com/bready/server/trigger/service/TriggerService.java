@@ -6,7 +6,6 @@ import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.stats.event.TriggerCreatedEvent;
-import com.bready.server.stats.service.PlanStatsService;
 import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.dto.TriggerCreateRequest;
 import com.bready.server.trigger.dto.TriggerCreateResponse;
@@ -23,7 +22,6 @@ public class TriggerService {
 
     private final PlanCategoryRepository planCategoryRepository;
     private final TriggerRepository triggerRepository;
-    private final PlanStatsService planStatsService;
     private final CategoryStateRepository categoryStateRepository;
     private final ApplicationEventPublisher eventPublisher;
 
