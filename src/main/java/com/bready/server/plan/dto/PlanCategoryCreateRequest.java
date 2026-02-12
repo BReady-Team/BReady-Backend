@@ -10,7 +10,4 @@ public class PlanCategoryCreateRequest {
     @NotNull(message = "categoryType은 필수입니다.")
     private PlaceCategoryType categoryType;
 
-    @NotNull(message = "sequence는 필수입니다.")
-    private Integer sequence;
-
 }

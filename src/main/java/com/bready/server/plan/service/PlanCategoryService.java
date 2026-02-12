@@ -35,13 +35,11 @@ public class PlanCategoryService {
             throw new ApplicationException(CategoryErrorCase.CATEGORY_ACCESS_DENIED);
         }
 
-        Integer sequence = request.getSequence();
-        if (sequence == null || sequence < 1) {
-            throw new ApplicationException(CategoryErrorCase.INVALID_SEQUENCE);
-        }
+        Integer maxSeq = planCategoryRepository.findMaxSequenceByPlanId(planId);
+        int nextSequence = maxSeq + 1;
 
         PlanCategory saved = planCategoryRepository.save(
-                PlanCategory.create(plan, request.getCategoryType(), sequence)
+                PlanCategory.create(plan, request.getCategoryType(), nextSequence)
         );
 
         return PlanCategoryCreateResponse.builder()

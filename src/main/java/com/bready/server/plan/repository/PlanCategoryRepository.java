@@ -31,4 +31,14 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
 
     // 플랜 상세 조회에서 categories 조회용 (soft delete 차단 + sequence 정렬)
     List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
+
+    // sequence 자동 부여용 max sequence 조회
+    @Query("""
+    select coalesce(max(pc.sequence), 0)
+    from PlanCategory pc
+    where pc.plan.id = :planId
+      and pc.deletedAt is null
+""")
+    Integer findMaxSequenceByPlanId(@Param("planId") Long planId);
+
 }
