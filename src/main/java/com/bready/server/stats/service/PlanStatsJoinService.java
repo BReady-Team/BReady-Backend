@@ -8,8 +8,6 @@ import com.bready.server.stats.dto.PlanStatsItem;
 import com.bready.server.stats.dto.PlanStatsResponse;
 import com.bready.server.stats.exception.StatsErrorCase;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,15 +31,27 @@ public class PlanStatsJoinService {
             StatsPeriod period,
             Integer limitParam
     ) {
-
         int limit = normalizeLimit(limitParam);
 
-        Pageable pageable = PageRequest.of(0, limit);
+        // JOIN 기반 통계 rows (limit만큼만)
+        List<PlanRepository.PlanSwitchStatsRow> rows =
+                planRepository.findPlanSwitchStatsOptimized(ownerId, limit);
 
-        List<PlanRepository.PlanSwitchStatsRow> rows = planRepository.findPlanSwitchStats(ownerId, pageable);
+        if (rows.isEmpty()) {
+            return PlanStatsResponse.builder()
+                    .period(period)
+                    .items(List.of())
+                    .build();
+        }
+
+        // rows에 포함된 planIds만 뽑아서 IN 조회
+        List<Long> planIds = rows.stream()
+                .map(PlanRepository.PlanSwitchStatsRow::getPlanId)
+                .distinct()
+                .toList();
 
         Map<Long, List<String>> categoryMap =
-                categoryRepository.findCategoryTypesByOwner(ownerId)
+                categoryRepository.findCategoryTypesByPlanIds(planIds)
                         .stream()
                         .collect(Collectors.groupingBy(
                                 PlanCategoryRepository.PlanCategoryTypeRow::getPlanId,
@@ -57,12 +67,7 @@ public class PlanStatsJoinService {
                         .planTitle(row.getPlanTitle())
                         .planDate(row.getPlanDate())
                         .region(row.getRegion())
-                        .categoryTypes(
-                                categoryMap.getOrDefault(
-                                        row.getPlanId(),
-                                        List.of()
-                                )
-                        )
+                        .categoryTypes(categoryMap.getOrDefault(row.getPlanId(), List.of()))
                         .totalSwitches(row.getTotalSwitches())
                         .build())
                 .toList();
