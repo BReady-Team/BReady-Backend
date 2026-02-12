@@ -20,8 +20,9 @@ public class PlanStats extends BaseEntity {
     @Column(name = "plan_id", nullable = false)
     private Long planId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String period;
+    private StatsPeriod period;
 
     @Column(name = "total_triggers")
     private Integer totalTriggers;
