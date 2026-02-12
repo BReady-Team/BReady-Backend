@@ -5,10 +5,9 @@ import com.bready.server.stats.domain.StatsPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PlanStatsRepository extends JpaRepository<PlanStats, Long> {
-    Optional<PlanStats> findByPlanIdAndPeriod(Long planId, StatsPeriod period);
+    List<PlanStats> findByPlanIdIn(List<Long> planIds);
 
     List<PlanStats> findByPeriodAndPlanIdIn(
             StatsPeriod period,
