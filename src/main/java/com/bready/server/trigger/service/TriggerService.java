@@ -5,7 +5,7 @@ import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
-import com.bready.server.plan.repository.PlanRepository;
+import com.bready.server.stats.event.TriggerCreatedEvent;
 import com.bready.server.stats.service.PlanStatsService;
 import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.dto.TriggerCreateRequest;
@@ -13,6 +13,7 @@ import com.bready.server.trigger.dto.TriggerCreateResponse;
 import com.bready.server.trigger.exception.TriggerErrorCase;
 import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TriggerService {
 
-    private final PlanRepository planRepository;
     private final PlanCategoryRepository planCategoryRepository;
     private final TriggerRepository triggerRepository;
     private final PlanStatsService planStatsService;
     private final CategoryStateRepository categoryStateRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
@@ -52,14 +53,10 @@ public class TriggerService {
                 )
         );
 
-        // TODO: 인증 도입 후 플랜 소유자 검증 로직 추가 필요
-        // if (!category.getPlan().isOwnedBy(currentUserId)) {
-        //     throw ApplicationException.from(TriggerErrorCase.NO_TRIGGER_PERMISSION);
-        // }
+        Long planId = category.getPlan().getId();
 
-
-        // 통계 증가 (결정/장소 변경 없음)
-        planStatsService.increaseTriggerCount(category.getPlan().getId());
+        // 이벤트 발행
+        eventPublisher.publishEvent(new TriggerCreatedEvent(planId));
 
         return TriggerCreateResponse.builder()
                 .triggerId(trigger.getId())
