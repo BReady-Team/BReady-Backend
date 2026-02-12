@@ -47,5 +47,15 @@ public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
     """)
     long countByOwnerIdAndPeriod(@Param("ownerId")Long ownerId, @Param("startAt")LocalDateTime startAt);
 
+    @Query("""
+        select count(sl)
+        from SwitchLog sl
+        join sl.decision d
+        join d.trigger t
+        where t.plan.id = :planId
+          and sl.createdAt >= :from
+    """)
+    long countSwitchByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
+
     boolean existsByDecision_Id(Long decisionId);
 }
