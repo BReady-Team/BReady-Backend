@@ -1,11 +1,13 @@
 package com.bready.server.stats.service;
 
+import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.repository.PlanRepository;
 import com.bready.server.stats.domain.PlanStats;
 import com.bready.server.stats.domain.StatsPeriod;
 import com.bready.server.stats.dto.PlanStatsItem;
 import com.bready.server.stats.dto.PlanStatsResponse;
+import com.bready.server.stats.exception.StatsErrorCase;
 import com.bready.server.stats.repository.PlanStatsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,12 +28,15 @@ public class PlanStatsMaterializedService {
     private final PlanStatsRepository planStatsRepository;
     private final PlanRepository planRepository;
 
+    private static final int DEFAULT_LIMIT = 20;
+    private static final int MAX_LIMIT = 50;
+
     public PlanStatsResponse getStats(
             Long ownerId,
             StatsPeriod period,
             Integer limit
     ) {
-        int size = limit == null ? 20 : limit;
+        int size = normalizeLimit(limit);
 
         Pageable pageable =
                 PageRequest.of(0, size, Sort.by("planDate").descending());
@@ -79,5 +84,14 @@ public class PlanStatsMaterializedService {
                 .period(period)
                 .items(items)
                 .build();
+    }
+
+
+    private int normalizeLimit(Integer limitParam) {
+        int limit = limitParam == null ? DEFAULT_LIMIT : limitParam;
+        if (limit <= 0 || limit > MAX_LIMIT) {
+            throw ApplicationException.from(StatsErrorCase.INVALID_PARAMETER);
+        }
+        return limit;
     }
 }

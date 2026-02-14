@@ -62,7 +62,7 @@ public class PlanStatsUpdater {
         return switch (period) {
             case WEEK -> now.minusWeeks(1);
             case MONTH -> now.minusMonths(1);
-            case ALL -> LocalDateTime.MIN;
+            case ALL -> LocalDateTime.of(2000, 1, 1, 0, 0);
         };
     }
 

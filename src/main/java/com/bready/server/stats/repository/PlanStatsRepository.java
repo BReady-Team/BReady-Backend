@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlanStatsRepository extends JpaRepository<PlanStats, Long> {
-    List<PlanStats> findByPlanIdIn(List<Long> planIds);
-
     Optional<PlanStats> findByPlanIdAndPeriod(
             Long planId,
             StatsPeriod period
