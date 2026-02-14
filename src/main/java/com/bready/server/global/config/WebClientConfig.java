@@ -31,7 +31,7 @@ public class WebClientConfig {
                 )
                 .build();
     }
-    
+
     @Bean(name = "naverWebClient")
     public WebClient naverWebClient() {
         HttpClient httpClient = HttpClient.create()
