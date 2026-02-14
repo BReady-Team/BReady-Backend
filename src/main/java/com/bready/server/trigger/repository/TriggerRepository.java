@@ -34,4 +34,12 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
         group by t.triggerType
     """)
     List<TriggerTypeCount> countByTriggerType(@Param("ownerId") Long ownerId, @Param("startAt") LocalDateTime startAt);
+
+    @Query("""
+    select count(t)
+    from Trigger t
+    where t.plan.id = :planId
+      and (:from is null or t.occurredAt >= :from)
+    """)
+    long countByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
 }

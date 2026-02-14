@@ -6,7 +6,7 @@ import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
-import com.bready.server.stats.service.PlanStatsService;
+import com.bready.server.stats.event.SwitchLogCreatedEvent;
 import com.bready.server.trigger.domain.Decision;
 import com.bready.server.trigger.domain.SwitchLog;
 import com.bready.server.trigger.dto.DecisionSwitchRequest;
@@ -15,6 +15,7 @@ import com.bready.server.trigger.exception.TriggerSwitchErrorCase;
 import com.bready.server.trigger.repository.DecisionRepository;
 import com.bready.server.trigger.repository.SwitchLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class SwitchService {
     private final SwitchLogRepository switchLogRepository;
     private final CategoryStateRepository categoryStateRepository;
     private final PlaceCandidateRepository placeCandidateRepository;
-    private final PlanStatsService planStatsService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DecisionSwitchResponse executeSwitch(Long decisionId, DecisionSwitchRequest request) {
@@ -104,7 +105,7 @@ public class SwitchService {
             throw ApplicationException.from(TriggerSwitchErrorCase.ALREADY_SWITCHED);
         }
 
-        planStatsService.increaseSwitchCount(planId);
+        eventPublisher.publishEvent(new SwitchLogCreatedEvent(planId));
 
         return DecisionSwitchResponse.builder()
                 .switchLogId(saved.getId())

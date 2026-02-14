@@ -6,6 +6,7 @@ import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
+import com.bready.server.stats.event.TriggerCreatedEvent;
 import com.bready.server.stats.service.PlanStatsService;
 import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.domain.TriggerType;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -40,6 +42,7 @@ class TriggerServiceTest {
     @Mock private TriggerRepository triggerRepository;
     @Mock private PlanStatsService planStatsService;
     @Mock private CategoryStateRepository categoryStateRepository;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @Test
     @DisplayName("트리거 생성 성공")
@@ -75,7 +78,7 @@ class TriggerServiceTest {
                 triggerService.createTrigger(new TriggerCreateRequest(planId, categoryId, TriggerType.WEATHER_BAD));
 
         assertThat(response.triggerId()).isEqualTo(100L);
-        verify(planStatsService).increaseTriggerCount(planId);
+        verify(eventPublisher).publishEvent(any(TriggerCreatedEvent.class));
     }
 
     @Test
