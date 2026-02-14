@@ -3,6 +3,7 @@ package com.bready.server.auth.controller;
 import com.bready.server.auth.dto.*;
 import com.bready.server.auth.service.AuthService;
 import com.bready.server.auth.service.KakaoAuthService;
+import com.bready.server.auth.service.NaverAuthService;
 import com.bready.server.global.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final KakaoAuthService kakaoAuthService;
+    private final NaverAuthService naverAuthService;
 
 
     @PostMapping("/signup")
@@ -105,5 +107,27 @@ public class AuthController {
             @Valid @RequestBody KakaoLoginRequest request
     ) {
         return CommonResponse.success(kakaoAuthService.login(request));
+    }
+
+    @PostMapping("/naver/login")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "네이버 로그인",
+            description = "인가 코드와 state로 네이버 인증 후 access, refresh 토큰 발급 및 사용자 정보 반환"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "네이버 로그인 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "이메일 제공 동의 필수",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 네이버 인증 정보",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "502", description = "네이버 인증 서버 통신 실패",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<NaverLoginResponse> naverLogin(
+            @Valid @RequestBody NaverLoginRequest request
+    ) {
+        return CommonResponse.success(naverAuthService.login(request.getCode(), request.getState()));
     }
 }
