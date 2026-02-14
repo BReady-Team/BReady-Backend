@@ -5,10 +5,12 @@ import com.bready.server.stats.event.SwitchLogCreatedEvent;
 import com.bready.server.stats.event.TriggerCreatedEvent;
 import com.bready.server.stats.service.PlanStatsUpdater;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PlanStatsEventListener {
@@ -18,26 +20,24 @@ public class PlanStatsEventListener {
     // Switch 발생 → switchCount 변경
     @Async
     @TransactionalEventListener
-    public void handleSwitchCreated(
-            SwitchLogCreatedEvent event
-    ) {
-        Long planId = event.planId();
-
-        updater.recalculate(planId, StatsPeriod.WEEK);
-        updater.recalculate(planId, StatsPeriod.MONTH);
-        updater.recalculate(planId, StatsPeriod.ALL);
+    public void handleSwitchCreated(SwitchLogCreatedEvent event) {
+        recalculateAll(event.planId());
     }
 
     // Trigger 발생 → triggerCount 변경
     @Async
     @TransactionalEventListener
-    public void handleTriggerCreated(
-            TriggerCreatedEvent event
-    ) {
-        Long planId = event.planId();
+    public void handleTriggerCreated(TriggerCreatedEvent event) {
+        recalculateAll(event.planId());
+    }
 
-        updater.recalculate(planId, StatsPeriod.WEEK);
-        updater.recalculate(planId, StatsPeriod.MONTH);
-        updater.recalculate(planId, StatsPeriod.ALL);
+    private void recalculateAll(Long planId) {
+        for (StatsPeriod period : StatsPeriod.values()) {
+            try {
+                updater.recalculate(planId, period);
+            } catch (Exception e) {
+                log.error("PlanStats 갱신 실패: planId={}, period={}", planId, period, e);
+            }
+        }
     }
 }
