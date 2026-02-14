@@ -16,6 +16,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class TriggerService {
@@ -52,9 +54,10 @@ public class TriggerService {
         );
 
         Long planId = category.getPlan().getId();
+        LocalDateTime occurredAt = trigger.getOccurredAt();
 
         // 이벤트 발행
-        eventPublisher.publishEvent(new TriggerCreatedEvent(planId));
+        eventPublisher.publishEvent(new TriggerCreatedEvent(planId,occurredAt));
 
         return TriggerCreateResponse.builder()
                 .triggerId(trigger.getId())
