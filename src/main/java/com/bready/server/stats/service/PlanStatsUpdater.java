@@ -6,6 +6,7 @@ import com.bready.server.stats.repository.PlanStatsRepository;
 import com.bready.server.trigger.repository.SwitchLogRepository;
 import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,23 +37,22 @@ public class PlanStatsUpdater {
                 calculateReliability(triggerCount, switchCount);
 
         PlanStats stats = planStatsRepository
-                .findByPlanIdAndPeriod(planId, period)
-                .orElseGet(() ->
-                        PlanStats.create(
-                                planId,
-                                period,
-                                0,
-                                0,
-                                BigDecimal.ZERO
-                        )
-                );
+                                .findByPlanIdAndPeriod(planId, period)
+                                .orElse(null);
 
-        stats.update(
-                (int) triggerCount,
-                (int) switchCount,
-                reliability
-        );
+        if (stats == null) {
+            try {
+                stats = PlanStats.create(planId, period, (int) triggerCount, (int) switchCount, reliability);
+                planStatsRepository.save(stats);
+                return;
+            } catch (DataIntegrityViolationException e) {
+                stats = planStatsRepository
+                        .findByPlanIdAndPeriod(planId, period)
+                        .orElseThrow();
+            }
+        }
 
+        stats.update((int) triggerCount, (int) switchCount, reliability);
         planStatsRepository.save(stats);
     }
 
