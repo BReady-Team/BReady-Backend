@@ -12,11 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlanStatsRepository extends JpaRepository<PlanStats, Long> {
-    Optional<PlanStats> findByPlanIdAndPeriod(
-            Long planId,
-            StatsPeriod period
-    );
-
     List<PlanStats> findByPeriodAndPlanIdIn(
             StatsPeriod period,
             List<Long> planIds
