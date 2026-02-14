@@ -93,7 +93,7 @@ public class NaverAuthTransactionHandler {
         return NaverLoginResponse.builder()
                 .accessToken(tokens.getAccessToken())
                 .refreshToken(tokens.getRefreshToken())
-                .isNewUser(isNewUser)
+                .newUser(isNewUser)
                 .user(NaverLoginResponse.UserDto.builder()
                         .userId(user.getId())
                         .nickname(nicknameForResponse)
