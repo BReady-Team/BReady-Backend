@@ -109,11 +109,29 @@ public class AuthController {
         return CommonResponse.success(kakaoAuthService.login(request));
     }
 
+    // 네이버 자동 콜백 처리 (네이버에서 직접 호출)
+    @GetMapping("/naver/callback")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "네이버 로그인 콜백",
+            description = "네이버에서 redirect되는 code/state를 받아 로그인 처리"
+    )
+    public CommonResponse<NaverLoginResponse> naverCallback(
+            @RequestParam String code,
+            @RequestParam String state
+    ) {
+        return CommonResponse.success(
+                naverAuthService.login(code, state)
+        );
+    }
+
+
+    // Swagger 테스트용 (수동 테스트)
     @PostMapping("/naver/login")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "네이버 로그인",
-            description = "인가 코드와 state로 네이버 인증 후 access, refresh 토큰 발급 및 사용자 정보 반환"
+            summary = "네이버 로그인 (Swagger 테스트용)",
+            description = "인가 코드와 state를 직접 입력하여 로그인 테스트"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "네이버 로그인 성공",
@@ -128,6 +146,8 @@ public class AuthController {
     public CommonResponse<NaverLoginResponse> naverLogin(
             @Valid @RequestBody NaverLoginRequest request
     ) {
-        return CommonResponse.success(naverAuthService.login(request.getCode(), request.getState()));
+        return CommonResponse.success(
+                naverAuthService.login(request.getCode(), request.getState())
+        );
     }
 }
