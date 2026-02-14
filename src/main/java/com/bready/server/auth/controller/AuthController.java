@@ -87,6 +87,27 @@ public class AuthController {
         return CommonResponse.success(authService.refresh(request));
     }
 
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "로그아웃",
+            description = "RefreshToken을 무효화하여 로그아웃 처리"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "필수 입력값 누락",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰 또는 만료된 토큰",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<Void> logout(
+            @Valid @RequestBody RefreshRequest request
+    ) {
+        authService.logout(request);
+        return CommonResponse.success(null);
+    }
+
     @PostMapping("/kakao/login")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
