@@ -74,7 +74,7 @@ public class PlanStatsUpdater {
             return BigDecimal.valueOf(100);
         }
 
-        double ratio = 1 - ((double) switchCount / triggerCount);
+        double ratio = Math.max(0, 1 - ((double) switchCount / triggerCount));
 
         return BigDecimal.valueOf(ratio * 100)
                 .setScale(2, RoundingMode.HALF_UP);

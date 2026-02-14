@@ -53,7 +53,7 @@ public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
         join sl.decision d
         join d.trigger t
         where t.plan.id = :planId
-          and sl.createdAt >= :from
+          and (:from is null or sl.createdAt >= :from)
     """)
     long countSwitchByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
 

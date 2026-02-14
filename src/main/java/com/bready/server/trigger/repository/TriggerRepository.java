@@ -39,7 +39,7 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
     select count(t)
     from Trigger t
     where t.plan.id = :planId
-      and t.occurredAt >= :from
+      and (:from is null or t.occurredAt >= :from)
     """)
     long countByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
 }
