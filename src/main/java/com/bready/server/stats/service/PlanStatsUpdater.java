@@ -6,7 +6,6 @@ import com.bready.server.stats.repository.PlanStatsRepository;
 import com.bready.server.trigger.repository.SwitchLogRepository;
 import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +22,7 @@ public class PlanStatsUpdater {
     private final TriggerRepository triggerRepository;
     private final SwitchLogRepository switchLogRepository;
 
+    @Transactional
     public void recalculate(Long planId, StatsPeriod period) {
 
         LocalDateTime from = resolveFrom(period);
@@ -37,23 +37,14 @@ public class PlanStatsUpdater {
                 calculateReliability(triggerCount, switchCount);
 
         PlanStats stats = planStatsRepository
-                                .findByPlanIdAndPeriod(planId, period)
-                                .orElse(null);
-
-        if (stats == null) {
-            try {
-                stats = PlanStats.create(planId, period, (int) triggerCount, (int) switchCount, reliability);
-                planStatsRepository.save(stats);
-                return;
-            } catch (DataIntegrityViolationException e) {
-                stats = planStatsRepository
-                        .findByPlanIdAndPeriod(planId, period)
-                        .orElseThrow();
-            }
-        }
+                .findByPlanIdAndPeriodForUpdate(planId, period)
+                .orElseGet(() -> {
+                    PlanStats newStats =
+                            PlanStats.create(planId, period, 0, 0, BigDecimal.ZERO);
+                    return planStatsRepository.save(newStats);
+                });
 
         stats.update((int) triggerCount, (int) switchCount, reliability);
-        planStatsRepository.save(stats);
     }
 
     private LocalDateTime resolveFrom(StatsPeriod period) {
@@ -62,7 +53,7 @@ public class PlanStatsUpdater {
         return switch (period) {
             case WEEK -> now.minusWeeks(1);
             case MONTH -> now.minusMonths(1);
-            case ALL -> LocalDateTime.of(2000, 1, 1, 0, 0);
+            case ALL -> null;
         };
     }
 
