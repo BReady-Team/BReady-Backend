@@ -23,6 +23,6 @@ public class NaverUserInfoClient {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + naverAccessToken)
                 .retrieve()
                 .bodyToMono(NaverUserInfoResponse.class)
-                .block();
+                .block(java.time.Duration.ofSeconds(5));
     }
 }

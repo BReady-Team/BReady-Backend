@@ -48,7 +48,11 @@ public class NaverAuthService {
         try {
             NaverTokenResponse token = naverOAuthClient.getToken(code, state);
 
-            if (token != null && token.getError() != null) {
+            if (token == null) {
+                throw new ApplicationException(AuthErrorCase.NAVER_API_COMMUNICATION_FAILED);
+            }
+
+            if (token.getError() != null) {
                 throw new ApplicationException(AuthErrorCase.INVALID_NAVER_AUTH);
             }
 

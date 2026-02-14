@@ -1,5 +1,6 @@
 package com.bready.server.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ public class NaverUserInfoResponse {
         private String email;
         private String nickname;
         private String name;
-        private String profile_image;
+        @JsonProperty("profile_image")
+        private String profileImage;
     }
 }

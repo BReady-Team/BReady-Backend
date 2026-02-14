@@ -1,5 +1,6 @@
 package com.bready.server.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,7 +10,8 @@ public class NaverLoginResponse {
 
     private String accessToken;
     private String refreshToken;
-    private boolean isNewUser;
+    @JsonProperty("isNewUser")
+    private boolean newUser;
     private UserDto user;
 
     @Getter

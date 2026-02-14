@@ -40,6 +40,6 @@ public class NaverOAuthClient {
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .bodyToMono(NaverTokenResponse.class)
-                .block();
+                .block(java.time.Duration.ofSeconds(5));
     }
 }
