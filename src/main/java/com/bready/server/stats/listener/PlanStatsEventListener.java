@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
@@ -19,14 +20,14 @@ public class PlanStatsEventListener {
 
     // Switch 발생 → switchCount 변경
     @Async
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSwitchCreated(SwitchLogCreatedEvent event) {
         recalculateAll(event.planId());
     }
 
     // Trigger 발생 → triggerCount 변경
     @Async
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTriggerCreated(TriggerCreatedEvent event) {
         recalculateAll(event.planId());
     }

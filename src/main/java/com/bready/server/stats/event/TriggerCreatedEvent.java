@@ -1,5 +1,6 @@
 package com.bready.server.stats.event;
 
-public record TriggerCreatedEvent(
-        Long planId
-) {}
+import java.time.LocalDateTime;
+
+public record TriggerCreatedEvent(Long planId, LocalDateTime occurredAt) {
+}
