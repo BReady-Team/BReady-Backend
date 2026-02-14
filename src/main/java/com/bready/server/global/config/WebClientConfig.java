@@ -31,4 +31,22 @@ public class WebClientConfig {
                 )
                 .build();
     }
+    
+    @Bean(name = "naverWebClient")
+    public WebClient naverWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000)
+                .responseTimeout(Duration.ofSeconds(5))
+                .doOnConnected(conn ->
+                        conn.addHandlerLast(new ReadTimeoutHandler(5))
+                                .addHandlerLast(new WriteTimeoutHandler(5))
+                );
+
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer ->
+                        configurer.defaultCodecs().maxInMemorySize(1024 * 1024)
+                )
+                .build();
+    }
 }
