@@ -34,7 +34,7 @@ public class PlaceCandidateService {
 
         // planId + categoryId 매칭 검증
         PlanCategory category = planCategoryRepository
-                .findByIdAndPlan_Id(request.categoryId(), request.planId())
+                .findByIdAndPlan_IdAndDeletedAtIsNull(request.categoryId(), request.planId())
                 .orElseThrow(() -> ApplicationException.from(PlaceErrorCase.INVALID_PLAN_OR_CATEGORY));
 
         // Place는 중복이면 재사용 (REQUIRES_NEW로 분리된 빈 호출)

@@ -53,7 +53,7 @@ class TriggerServiceTest {
         CategoryState state = mock(CategoryState.class);
         Trigger trigger = mock(Trigger.class);
 
-        given(planCategoryRepository.findByIdAndPlan_Id(categoryId, planId))
+        given(planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(categoryId, planId))
                 .willReturn(Optional.of(category));
 
         given(category.getPlan()).willReturn(plan);
@@ -83,7 +83,7 @@ class TriggerServiceTest {
     void createTrigger_categoryStateNotFound() {
         PlanCategory category = mock(PlanCategory.class);
 
-        given(planCategoryRepository.findByIdAndPlan_Id(1L, 1L))
+        given(planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(1L, 1L))
                 .willReturn(Optional.of(category));
 
         given(categoryStateRepository.findByCategory_Id(any()))
@@ -102,7 +102,7 @@ class TriggerServiceTest {
     @Test
     @DisplayName("트리거 생성 실패 - 플랜/카테고리 없음")
     void createTrigger_planOrCategoryNotFound() {
-        given(planCategoryRepository.findByIdAndPlan_Id(any(), any()))
+        given(planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(any(), any()))
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() ->

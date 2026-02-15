@@ -72,7 +72,7 @@ class PlaceCandidateServiceTest {
         when(savedCandidate.getId()).thenReturn(100L);
         when(savedCandidate.getCreatedAt()).thenReturn(LocalDateTime.now());
 
-        when(planCategoryRepository.findByIdAndPlan_Id(10L, 1L))
+        when(planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(10L, 1L))
                 .thenReturn(Optional.of(category));
 
         when(placePersistenceService.getOrCreate(request))
@@ -105,7 +105,7 @@ class PlaceCandidateServiceTest {
         PlanCategory category = mock(PlanCategory.class);
         Place place = mock(Place.class);
 
-        when(planCategoryRepository.findByIdAndPlan_Id(10L, 1L))
+        when(planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(10L, 1L))
                 .thenReturn(Optional.of(category));
 
         when(placePersistenceService.getOrCreate(request))
