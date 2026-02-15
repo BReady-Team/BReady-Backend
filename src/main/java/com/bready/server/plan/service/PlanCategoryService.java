@@ -175,7 +175,7 @@ public class PlanCategoryService {
 
         return PlanCategoryOrderUpdateResponse.builder()
                 .planId(planId)
-                .updatedAt(LocalDateTime.now())
+                .updatedAt(plan.getUpdatedAt())
                 .build();
     }
 }
