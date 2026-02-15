@@ -26,6 +26,8 @@ public class UserProfile {
         UserProfile profile = new UserProfile();
         profile.user = user;
         profile.nickname = nickname;
+        // 양방향 연관관계 세팅 추가
+        user.setUserProfile(profile);
         return profile;
     }
 }

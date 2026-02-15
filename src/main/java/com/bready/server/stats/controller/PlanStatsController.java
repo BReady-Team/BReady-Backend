@@ -4,15 +4,9 @@ import com.bready.server.global.auth.CurrentUser;
 import com.bready.server.global.response.CommonResponse;
 import com.bready.server.stats.domain.StatsPeriod;
 import com.bready.server.stats.dto.PlanStatsResponse;
-import com.bready.server.stats.service.PlanListStatsService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.bready.server.stats.service.PlanStatsJoinService;
+import com.bready.server.stats.service.PlanStatsMaterializedService;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.NotNull;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -27,8 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class PlanStatsController {
 
-    private final PlanListStatsService planListStatsService;
+    private final PlanStatsJoinService joinService;
+    private final PlanStatsMaterializedService materializedService;
 
+    /*
     @GetMapping("/plans")
     @Operation(
             summary = "플랜별 통계 목록 조회",
@@ -50,6 +48,33 @@ public class PlanStatsController {
             @Parameter(description = "목록 개수 (기본 20, 최대 50)", example = "20")
             @RequestParam(required = false) @Positive @Max(50) Integer limit
     ) {
-        return CommonResponse.success(planListStatsService.getPlanStats(ownerId, period, limit));
+        return CommonResponse.success(planStatsJoinService.getPlanStats(ownerId, period, limit));
+    }
+     */
+
+    // JOIN 기반 조회
+    @GetMapping("/plans/join")
+    public CommonResponse<PlanStatsResponse> getJoinStats(
+            @CurrentUser Long ownerId,
+            @RequestParam @NotNull StatsPeriod period,
+            @RequestParam(required = false) @Positive @Max(50) Integer limit
+    ) {
+
+        return CommonResponse.success(
+                joinService.getStats(ownerId, period, limit)
+        );
+    }
+
+    // Materialized 조회
+    @GetMapping("/plans/materialized")
+    public CommonResponse<PlanStatsResponse> getMaterializedStats(
+            @CurrentUser Long ownerId,
+            @RequestParam @NotNull StatsPeriod period,
+            @RequestParam(required = false) @Positive @Max(50) Integer limit
+    ) {
+
+        return CommonResponse.success(
+                materializedService.getStats(ownerId, period, limit)
+        );
     }
 }

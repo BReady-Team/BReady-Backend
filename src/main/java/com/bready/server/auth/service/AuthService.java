@@ -105,4 +105,23 @@ public class AuthService {
 
         return tokenIssuer.issue(userId);
     }
+
+
+    @Transactional
+    public void logout(RefreshRequest request) {
+        jwtTokenProvider.validateRefreshToken(request.getRefreshToken());
+
+        Long userId = jwtTokenProvider.getUserId(request.getRefreshToken());
+
+        // Redis 저장된 토큰 조회
+        RefreshToken saved = refreshTokenRepository.findById(String.valueOf(userId))
+                .orElseThrow(() -> new ApplicationException(AuthErrorCase.REFRESH_TOKEN_INVALID));
+
+        if (!saved.getToken().equals(request.getRefreshToken())) {
+            throw new ApplicationException(AuthErrorCase.REFRESH_TOKEN_INVALID);
+        }
+
+        // Redis에서 삭제
+        refreshTokenRepository.deleteById(String.valueOf(userId));
+    }
 }

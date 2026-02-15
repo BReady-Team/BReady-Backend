@@ -23,6 +23,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         Long getTotalSwitches();
     }
 
+    /*
     @Query("""
         select
             p.id as planId,
@@ -42,6 +43,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             @Param("ownerId") Long ownerId,
             Pageable pageable
     );
+     */
 
     @Query("""
         select p
@@ -59,5 +61,32 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     long countByOwnerId(@Param("ownerId") Long ownerId);
 
     Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
+
+
+    @Query(value = """
+    SELECT
+        p.id as planId,
+        p.title as planTitle,
+        p.plan_date as planDate,
+        p.region as region,
+        COALESCE(COUNT(sl.id),0) as totalSwitches
+    FROM (
+        SELECT id, title, plan_date, region
+        FROM plans
+        WHERE owner_id = :ownerId
+            AND deleted_at IS NULL
+        ORDER BY plan_date DESC
+        LIMIT :limit
+    ) p
+    LEFT JOIN triggers t ON t.plan_id = p.id AND t.deleted_at IS NULL
+    LEFT JOIN decisions d ON d.trigger_id = t.id AND d.deleted_at IS NULL
+    LEFT JOIN switch_logs sl ON sl.decision_id = d.id AND sl.deleted_at IS NULL
+    GROUP BY p.id, p.title, p.plan_date, p.region
+    ORDER BY p.plan_date DESC
+    """, nativeQuery = true)
+    List<PlanSwitchStatsRow> findPlanSwitchStatsOptimized(
+            @Param("ownerId") Long ownerId,
+            @Param("limit") int limit
+    );
 
 }

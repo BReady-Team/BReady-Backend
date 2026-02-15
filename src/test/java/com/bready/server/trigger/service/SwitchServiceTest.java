@@ -7,6 +7,7 @@ import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
+import com.bready.server.stats.event.SwitchLogCreatedEvent;
 import com.bready.server.stats.service.PlanStatsService;
 import com.bready.server.trigger.domain.Decision;
 import com.bready.server.trigger.domain.SwitchLog;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -48,6 +50,8 @@ class SwitchServiceTest {
     private PlaceCandidateRepository placeCandidateRepository;
     @Mock
     private PlanStatsService planStatsService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Test
     @DisplayName("SWITCH 결정 전환 성공")
@@ -106,7 +110,7 @@ class SwitchServiceTest {
 
         assertThat(response.fromCandidateId()).isEqualTo(fromCandidateId);
         assertThat(response.toCandidateId()).isEqualTo(toCandidateId);
-        verify(planStatsService).increaseSwitchCount(planId);
+        verify(eventPublisher).publishEvent(any(SwitchLogCreatedEvent.class));
     }
 
     @Test

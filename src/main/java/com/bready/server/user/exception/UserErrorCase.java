@@ -22,7 +22,10 @@ public enum UserErrorCase implements ErrorCase {
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, 4091, "이미 사용 중인 이메일입니다."),
 
     // 소셜 로그인
-    KAKAO_EMAIL_CONSENT_REQUIRED(HttpStatus.BAD_REQUEST, 4104, "이메일 제공에 동의해야 가입/로그인이 가능합니다.");
+    KAKAO_EMAIL_CONSENT_REQUIRED(HttpStatus.BAD_REQUEST, 4104, "이메일 제공에 동의해야 가입/로그인이 가능합니다."),
+
+    // 네이버 이메일 동의 필수
+    NAVER_EMAIL_CONSENT_REQUIRED(HttpStatus.BAD_REQUEST, 4105, "네이버 로그인 시 이메일 제공 동의가 필요합니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;
