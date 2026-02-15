@@ -34,7 +34,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private UserProfile userProfile;
 
     public static User createLocal(String email, String encodedPassword) {
@@ -59,5 +59,9 @@ public class User extends BaseEntity {
         user.authProvider = provider;
         user.providerUserId = providerUserId;
         return user;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
     }
 }
