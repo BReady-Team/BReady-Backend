@@ -9,6 +9,8 @@ import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,20 +37,37 @@ public class PlanCategoryService {
             throw new ApplicationException(CategoryErrorCase.CATEGORY_ACCESS_DENIED);
         }
 
-        Integer maxSeq = planCategoryRepository.findMaxSequenceByPlanId(planId);
-        int nextSequence = maxSeq + 1;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            PlanCategory last = planCategoryRepository
+                    .findLastByPlanIdForUpdate(planId, PageRequest.of(0, 1))
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-        PlanCategory saved = planCategoryRepository.save(
-                PlanCategory.create(plan, request.getCategoryType(), nextSequence)
-        );
+            int nextSequence = (last == null) ? 1 : last.getSequence() + 1;
 
-        return PlanCategoryCreateResponse.builder()
-                .planCategoryId(saved.getId())
-                .planId(plan.getId())
-                .categoryType(saved.getCategoryType())
-                .sequence(saved.getSequence())
-                .createdAt(saved.getCreatedAt())
-                .build();
+            try {
+                PlanCategory saved = planCategoryRepository.save(
+                        PlanCategory.create(plan, request.getCategoryType(), nextSequence)
+                );
+
+                return PlanCategoryCreateResponse.builder()
+                        .planCategoryId(saved.getId())
+                        .planId(plan.getId())
+                        .categoryType(saved.getCategoryType())
+                        .sequence(saved.getSequence())
+                        .createdAt(saved.getCreatedAt())
+                        .build();
+            } catch (DataIntegrityViolationException e) {
+                // 마지막 시도에 실패 처리
+                if (attempt == 2) {
+                    throw e;
+                }
+            }
+        }
+
+        throw new IllegalStateException("unreachable");
+
     }
 
     @Transactional

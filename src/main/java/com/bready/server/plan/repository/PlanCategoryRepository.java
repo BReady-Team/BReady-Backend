@@ -1,7 +1,10 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.PlanCategory;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,13 +32,16 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     // 플랜 상세 조회에서 categories 조회용 (soft delete 차단 + sequence 정렬)
     List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
 
-    // sequence 자동 부여용 max sequence 조회
+    // addCategory 동시성 제어 - 동일 planId에 대해 마지막 sequence 행 잠금
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-    select coalesce(max(pc.sequence), 0)
+    select pc
     from PlanCategory pc
     where pc.plan.id = :planId
       and pc.deletedAt is null
+    order by pc.sequence desc
 """)
-    Integer findMaxSequenceByPlanId(@Param("planId") Long planId);
+    List<PlanCategory> findLastByPlanIdForUpdate(@Param("planId") Long planId, Pageable pageable);
+
 
 }
