@@ -108,7 +108,7 @@ public class PlanCategoryService {
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
-            throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
+            throw new ApplicationException(CategoryErrorCase.CATEGORY_ACCESS_DENIED);
         }
 
         List<PlanCategoryOrderUpdateRequest.OrderItem> orders = request.getOrders();
