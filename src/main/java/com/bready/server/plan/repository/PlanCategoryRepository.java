@@ -1,10 +1,8 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.PlanCategory;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,8 +30,6 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     // 플랜 상세 조회에서 categories 조회용 (soft delete 차단 + sequence 정렬)
     List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
 
-    // addCategory 동시성 제어 - 동일 planId에 대해 마지막 sequence 행 잠금
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
     select pc
     from PlanCategory pc
@@ -41,7 +37,7 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
       and pc.deletedAt is null
     order by pc.sequence desc
 """)
-    List<PlanCategory> findLastByPlanIdForUpdate(@Param("planId") Long planId, Pageable pageable);
+    List<PlanCategory> findLastByPlanId(@Param("planId") Long planId, Pageable pageable);
 
 
     // planIds로만 category 조회 (성능 개선)

@@ -9,12 +9,10 @@ import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,43 +28,32 @@ public class PlanCategoryService {
     @Transactional
     public PlanCategoryCreateResponse addCategory(Long userId, Long planId, PlanCategoryCreateRequest request) {
 
-        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNullForUpdate(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
             throw new ApplicationException(CategoryErrorCase.CATEGORY_ACCESS_DENIED);
         }
 
-        for (int attempt = 0; attempt < 3; attempt++) {
-            PlanCategory last = planCategoryRepository
-                    .findLastByPlanIdForUpdate(planId, PageRequest.of(0, 1))
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
+        PlanCategory last = planCategoryRepository
+                .findLastByPlanId(planId, PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .orElse(null);
 
-            int nextSequence = (last == null) ? 1 : last.getSequence() + 1;
+        int nextSequence = (last == null) ? 1 : last.getSequence() + 1;
 
-            try {
-                PlanCategory saved = planCategoryRepository.save(
-                        PlanCategory.create(plan, request.getCategoryType(), nextSequence)
-                );
+        PlanCategory saved = planCategoryRepository.save(
+                PlanCategory.create(plan, request.getCategoryType(), nextSequence)
+        );
 
-                return PlanCategoryCreateResponse.builder()
-                        .planCategoryId(saved.getId())
-                        .planId(plan.getId())
-                        .categoryType(saved.getCategoryType())
-                        .sequence(saved.getSequence())
-                        .createdAt(saved.getCreatedAt())
-                        .build();
-            } catch (DataIntegrityViolationException e) {
-                // 마지막 시도에 실패 처리
-                if (attempt == 2) {
-                    throw e;
-                }
-            }
-        }
-
-        throw new IllegalStateException("unreachable");
+        return PlanCategoryCreateResponse.builder()
+                .planCategoryId(saved.getId())
+                .planId(plan.getId())
+                .categoryType(saved.getCategoryType())
+                .sequence(saved.getSequence())
+                .createdAt(saved.getCreatedAt())
+                .build();
 
     }
 

@@ -1,9 +1,11 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.Plan;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,28 +19,32 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     interface PlanSwitchStatsRow {
         Long getPlanId();
+
         String getPlanTitle();
+
         LocalDate getPlanDate();
+
         String getRegion();
+
         Long getTotalSwitches();
     }
 
     /*
     @Query("""
-        select
-            p.id as planId,
-            p.title as planTitle,
-            p.planDate as planDate,
-            p.region as region,
-            count(sl.id) as totalSwitches
-        from Plan p
-        left join Trigger t on t.plan = p
-        left join Decision d on d.trigger = t
-        left join SwitchLog sl on sl.decision = d
-        where p.ownerId = :ownerId
-        group by p.id, p.title, p.planDate, p.region
-        order by p.planDate desc
-    """)
+                select
+                    p.id as planId,
+                    p.title as planTitle,
+                    p.planDate as planDate,
+                    p.region as region,
+                    count(sl.id) as totalSwitches
+                from Plan p
+                left join Trigger t on t.plan = p
+                left join Decision d on d.trigger = t
+                left join SwitchLog sl on sl.decision = d
+                where p.ownerId = :ownerId
+                group by p.id, p.title, p.planDate, p.region
+                order by p.planDate desc
+            """)
     List<PlanSwitchStatsRow> findPlanSwitchStats(
             @Param("ownerId") Long ownerId,
             Pageable pageable
@@ -46,22 +52,22 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      */
 
     @Query("""
-        select p
-        from Plan p
-        where p.id = :planId
-          and p.ownerId = :ownerId
-    """)
+                select p
+                from Plan p
+                where p.id = :planId
+                  and p.ownerId = :ownerId
+            """)
     Optional<Plan> findByIdAndOwnerId(@Param("planId") Long planId, @Param("ownerId") Long ownerId);
 
     @Query("""
-        select count(p)
-        from Plan p
-        where p.ownerId = :ownerId
-    """)
+                select count(p)
+                from Plan p
+                where p.ownerId = :ownerId
+            """)
     long countByOwnerId(@Param("ownerId") Long ownerId);
 
+    // 조회용 - 락 없음
     Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
-
 
     @Query(value = """
     SELECT
@@ -88,5 +94,16 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             @Param("ownerId") Long ownerId,
             @Param("limit") int limit
     );
+
+    // 락 전용 - 카테고리 추가(addCategory)에서만 사용
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    select p
+    from Plan p
+    where p.id = :id
+      and p.deletedAt is null
+""")
+    Optional<Plan> findByIdAndDeletedAtIsNullForUpdate(@Param("id") Long id);
+
 
 }
