@@ -63,6 +63,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
                 select count(p)
                 from Plan p
                 where p.ownerId = :ownerId
+                            and p.deletedAt is null
             """)
     long countByOwnerId(@Param("ownerId") Long ownerId);
 
