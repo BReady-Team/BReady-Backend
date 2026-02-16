@@ -31,7 +31,7 @@ public class TriggerService {
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
 
         PlanCategory category = planCategoryRepository
-                .findByIdAndPlan_Id(request.categoryId(), request.planId())
+                .findByIdAndPlan_IdAndDeletedAtIsNull(request.categoryId(), request.planId())
                 .orElseThrow(() ->
                         ApplicationException.from(TriggerErrorCase.PLAN_OR_CATEGORY_NOT_FOUND)
                 );

@@ -1,6 +1,7 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.PlanCategory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,6 +24,20 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
         where p.ownerId = :ownerId
     """)
     List<PlanCategoryTypeRow> findCategoryTypesByOwner(@Param("ownerId") Long ownerId);
+
+    Optional<PlanCategory> findByIdAndPlan_IdAndDeletedAtIsNull(Long id, Long planId);
+
+    // 플랜 상세 조회에서 categories 조회용 (soft delete 차단 + sequence 정렬)
+    List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
+
+    @Query("""
+    select pc
+    from PlanCategory pc
+    where pc.plan.id = :planId
+      and pc.deletedAt is null
+    order by pc.sequence desc
+""")
+    List<PlanCategory> findLastByPlanId(@Param("planId") Long planId, Pageable pageable);
 
 
     // planIds로만 category 조회 (성능 개선)

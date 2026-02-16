@@ -21,14 +21,5 @@ public enum PlanErrorCase implements ErrorCase {
         return httpStatus.value();
     }
 
-    @Override
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
 }
 
