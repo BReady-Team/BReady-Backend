@@ -64,7 +64,7 @@ public class PlanCategoryService {
             Long planId,
             Long planCategoryId
     ) {
-        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNullForUpdate(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
