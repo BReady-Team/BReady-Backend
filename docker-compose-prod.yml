@@ -3,6 +3,7 @@ version: "2.4"
 services:
   api:
     image: ghcr.io/bready-team/bready-backend:latest
+    mem_limit: 1024m
     container_name: bready-api
     restart: unless-stopped
     ports:

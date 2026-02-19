@@ -82,6 +82,8 @@ jobs:
             NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
             NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
             EOF
+            
+            chmod 600 .env
 
             docker compose -f docker-compose-prod.yml --env-file .env pull
             docker compose -f docker-compose-prod.yml --env-file .env up -d
