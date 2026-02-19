@@ -43,6 +43,15 @@ jobs:
           push: true
           tags: ghcr.io/bready-team/bready-backend:latest
 
+      - name: Upload docker-compose file to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose-prod.yml"
+          target: "/home/ubuntu/bready/"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -73,8 +82,6 @@ jobs:
             NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
             NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
             EOF
-
-            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
             docker compose -f docker-compose-prod.yml --env-file .env pull
             docker compose -f docker-compose-prod.yml --env-file .env up -d
