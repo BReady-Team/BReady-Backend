@@ -78,7 +78,7 @@ jobs:
             cat > .env << 'EOF'
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
