@@ -20,6 +20,9 @@ jwt:
   access-exp: 1800000
   refresh-exp: 1209600000
 
+kakao:
+  rest-api-key: ${KAKAO_REST_API_KEY}
+
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
