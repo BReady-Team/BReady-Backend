@@ -44,6 +44,11 @@ jobs:
       SPRING_DATA_REDIS_HOST: 127.0.0.1
       SPRING_DATA_REDIS_PORT: 6379
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      CLOUD_AWS_REGION: ${{ secrets.AWS_REGION }}
+      CLOUD_AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      CLOUD_AWS_S3_PUBLIC_PREFIX: ${{ secrets.AWS_S3_PREFIX }}
+      CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
     steps:
       - name: Checkout source
