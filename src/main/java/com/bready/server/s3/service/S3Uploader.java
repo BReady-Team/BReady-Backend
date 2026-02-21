@@ -35,13 +35,11 @@ public class S3Uploader {
         this.prefix = prefix;
     }
 
-    public String upload(MultipartFile file, String folder) {
+    public String uploadAndReturnKey(MultipartFile file, String folder) {
         validateFile(file);
-
         String key = buildKey(file, folder);
 
         try (InputStream is = file.getInputStream()) {
-
             PutObjectRequest putObjectRequest =
                     PutObjectRequest.builder()
                             .bucket(bucket)
@@ -49,12 +47,8 @@ public class S3Uploader {
                             .contentType(file.getContentType())
                             .build();
 
-            s3Client.putObject(
-                    putObjectRequest,
-                    RequestBody.fromInputStream(is, file.getSize())
-            );
-
-            return buildUrl(key);
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, file.getSize()));
+            return key;
 
         } catch (Exception e) {
             log.error("S3 업로드 실패 key={}", key, e);
