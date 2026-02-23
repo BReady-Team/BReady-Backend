@@ -11,8 +11,8 @@ public enum S3ErrorCase implements ErrorCase {
     FILENAME_NOT_FOUND(HttpStatus.BAD_REQUEST, 14002, "업로드한 파일에 파일명이 없습니다."),
     EXTENSION_NOT_FOUND(HttpStatus.BAD_REQUEST, 14003, "확장자가 없는 파일은 업로드할 수 없습니다."),
 
-    FILE_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, 14004, "S3 업로드에 실패하였습니다."),
-    FILE_DELETE_FAIL(HttpStatus.BAD_REQUEST, 14005, "S3 삭제에 실패하였습니다.");
+    FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 14004, "S3 업로드에 실패하였습니다."),
+    FILE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 14005, "S3 삭제에 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer errorCode;
