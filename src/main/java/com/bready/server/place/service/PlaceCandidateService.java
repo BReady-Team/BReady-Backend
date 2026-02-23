@@ -69,12 +69,7 @@ public class PlaceCandidateService {
         }
 
         if (changed) {
-            categorySelectionLogRepository.save(
-                    CategorySelectionLog.of(
-                            category.getId(),
-                            saved.getId(),
-                            LocalDateTime.now()
-                    ));
+            saveSelectionLog(category.getId(), saved.getId());
         }
 
         return PlaceCandidateCreateResponse.builder()
@@ -120,13 +115,7 @@ public class PlaceCandidateService {
             state.changeRepresentative(candidateId);
         }
 
-        categorySelectionLogRepository.save(
-                CategorySelectionLog.of(
-                        categoryId,
-                        candidateId,
-                        LocalDateTime.now()
-                )
-        );
+        saveSelectionLog(categoryId, candidateId);
 
         return PlaceCandidateRepresentativeResponse.builder()
                 .categoryId(categoryId)
@@ -156,5 +145,15 @@ public class PlaceCandidateService {
                 .candidateId(candidateId)
                 .deletedAt(candidate.getDeletedAt())
                 .build();
+    }
+
+    private void saveSelectionLog(Long categoryId, Long candidateId) {
+        categorySelectionLogRepository.save(
+                CategorySelectionLog.of(
+                        categoryId,
+                        candidateId,
+                        LocalDateTime.now()
+                )
+        );
     }
 }
