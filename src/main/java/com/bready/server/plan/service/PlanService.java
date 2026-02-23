@@ -101,7 +101,8 @@ public class PlanService {
                         .stream()
                         .collect(Collectors.toMap(
                                 cs -> cs.getCategory().getId(),
-                                CategoryState::getCurrentCandidateId
+                                CategoryState::getCurrentCandidateId,
+                                (existing, replacement) -> existing
                         ));
 
         List<PlanDetailCategoryDto> categoryDtos = categories.stream()
