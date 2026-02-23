@@ -26,6 +26,7 @@ public class S3Controller {
 
     private final S3Uploader s3Uploader;
 
+    // 테스트용 업로드 API (실제 서비스에서는 S3Uploader를 각 도메인 Service에서 호출하여 사용합니다.)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "파일 업로드 (S3)",
