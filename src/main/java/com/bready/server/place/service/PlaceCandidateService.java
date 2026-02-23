@@ -48,6 +48,30 @@ public class PlaceCandidateService {
             throw ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE);
         }
 
+        // 대표 장소 로직 - 카테고리에서 후보가 있다면 대표 장소 보장
+        CategoryState state = categoryStateRepository
+                .findByCategory_IdForUpdate(category.getId())
+                .orElse(null);
+
+        boolean changed = false;
+
+        if (state == null) {
+            try {
+                categoryStateRepository.saveAndFlush(CategoryState.create(category, saved.getId()));
+                changed = true;
+            } catch (DataIntegrityViolationException e) {
+                // 다른 트랜잭션이 먼저 생성
+                state = categoryStateRepository.findByCategory_IdForUpdate(category.getId()).orElse(null);
+            }
+        } else if (state.getCurrentCandidateId() == null) {
+            state.changeRepresentative(saved.getId());
+            changed = true;
+        }
+
+        if (changed) {
+            saveSelectionLog(category.getId(), saved.getId());
+        }
+
         return PlaceCandidateCreateResponse.builder()
                 .candidateId(saved.getId())
                 .place(PlaceSummaryResponse.builder()
@@ -91,13 +115,7 @@ public class PlaceCandidateService {
             state.changeRepresentative(candidateId);
         }
 
-        categorySelectionLogRepository.save(
-                CategorySelectionLog.of(
-                        categoryId,
-                        candidateId,
-                        LocalDateTime.now()
-                )
-        );
+        saveSelectionLog(categoryId, candidateId);
 
         return PlaceCandidateRepresentativeResponse.builder()
                 .categoryId(categoryId)
@@ -127,5 +145,15 @@ public class PlaceCandidateService {
                 .candidateId(candidateId)
                 .deletedAt(candidate.getDeletedAt())
                 .build();
+    }
+
+    private void saveSelectionLog(Long categoryId, Long candidateId) {
+        categorySelectionLogRepository.save(
+                CategorySelectionLog.of(
+                        categoryId,
+                        candidateId,
+                        LocalDateTime.now()
+                )
+        );
     }
 }

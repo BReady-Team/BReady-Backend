@@ -1,9 +1,12 @@
 package com.bready.server.plan.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.Plan;
+import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.dto.*;
 import com.bready.server.plan.exception.PlanErrorCase;
+import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +27,7 @@ public class PlanService {
 
     private final PlanRepository planRepository;
     private final PlanCategoryRepository planCategoryRepository;
+    private final CategoryStateRepository categoryStateRepository;
 
     @Transactional
     public PlanCreateResponse createPlan(Long userId, PlanCreateRequest request) {
@@ -77,19 +83,64 @@ public class PlanService {
                 .updatedAt(plan.getUpdatedAt())
                 .build();
 
-        List<PlanCategoryItemDto> categories = planCategoryRepository
-                .findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(planId)
-                .stream()
-                .map(pc -> PlanCategoryItemDto.builder()
-                        .planCategoryId(pc.getId())
-                        .categoryType(pc.getCategoryType())
-                        .sequence(pc.getSequence())
-                        .build())
+        List<PlanCategory> categories = planCategoryRepository.findAllDetailByPlanId(planId);
+
+        if (categories.isEmpty()) {
+            return PlanDetailResponse.builder()
+                    .plan(planDto)
+                    .categories(List.of())
+                    .build();
+        }
+
+        List<Long> categoryIds = categories.stream()
+                .map(PlanCategory::getId)
                 .toList();
+
+        Map<Long, Long> representativeMap =
+                categoryStateRepository.findAllByCategory_IdIn(categoryIds)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                cs -> cs.getCategory().getId(),
+                                CategoryState::getCurrentCandidateId,
+                                (existing, replacement) -> existing
+                        ));
+
+        List<PlanDetailCategoryDto> categoryDtos = categories.stream()
+                .map(category-> {
+                    Long representativeId = representativeMap.get(category.getId());
+
+                    List<PlanDetailCandidateDto> candidateDtos =
+                            category.getCandidates().stream()
+                                    .sorted((a,b) -> Long.compare(b.getId(), a.getId()))
+                                    .map(candidate -> {
+                                        boolean isRep = representativeId != null && representativeId.equals(candidate.getId());
+
+                                        return PlanDetailCandidateDto.builder()
+                                                .candidateId(candidate.getId())
+                                                .isRepresentative(isRep)
+                                                .place(PlanDetailPlaceDto.builder()
+                                                        .id(candidate.getPlace().getId())
+                                                        .externalId(candidate.getPlace().getExternalId())
+                                                        .name(candidate.getPlace().getName())
+                                                        .address(candidate.getPlace().getAddress())
+                                                        .latitude(candidate.getPlace().getLatitude())
+                                                        .longitude(candidate.getPlace().getLongitude())
+                                                        .isIndoor(candidate.getPlace().getIsIndoor())
+                                                        .build())
+                                                .build();
+                                    }).toList();
+                    return PlanDetailCategoryDto.builder()
+                            .planCategoryId(category.getId())
+                            .categoryType(category.getCategoryType())
+                            .sequence(category.getSequence())
+                            .representativeCandidateId(representativeId)
+                            .candidates(candidateDtos)
+                            .build();
+                }).toList();
 
         return PlanDetailResponse.builder()
                 .plan(planDto)
-                .categories(categories)
+                .categories(categoryDtos)
                 .build();
     }
 

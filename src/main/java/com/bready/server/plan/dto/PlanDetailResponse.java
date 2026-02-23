@@ -14,7 +14,6 @@ public class PlanDetailResponse {
     private PlanDto plan;
 
     @Builder.Default
-    private List<PlanCategoryItemDto> categories = List.of();
+    private List<PlanDetailCategoryDto> categories = List.of();
 
-    // TODO : 장소, 카테고리 등 연결
 }

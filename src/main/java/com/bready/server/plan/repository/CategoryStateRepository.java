@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CategoryStateRepository extends JpaRepository<CategoryState, Long> {
@@ -21,4 +22,7 @@ public interface CategoryStateRepository extends JpaRepository<CategoryState, Lo
     Optional<CategoryState> findByCategory_IdForUpdate(
             @Param("categoryId") Long categoryId
     );
+
+    // 플랜 상세 조회 - 대표 후보 상태 일괄 조회
+    List<CategoryState> findAllByCategory_IdIn(List<Long> categoryIds);
 }
