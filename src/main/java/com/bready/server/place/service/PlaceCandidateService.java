@@ -53,21 +53,22 @@ public class PlaceCandidateService {
                 .findByCategory_IdForUpdate(category.getId())
                 .orElse(null);
 
+        boolean changed = false;
+
         if (state == null) {
-
-            CategoryState newState = CategoryState.create(category, saved.getId());
-            categoryStateRepository.save(newState);
-
-            categorySelectionLogRepository.save(
-                    CategorySelectionLog.of(
-                            category.getId(),
-                            saved.getId(),
-                            LocalDateTime.now()
-                    )
-            );
+            try {
+                categoryStateRepository.saveAndFlush(CategoryState.create(category, saved.getId()));
+                changed = true;
+            } catch (DataIntegrityViolationException e) {
+                // 다른 트랜잭션이 먼저 생성
+                state = categoryStateRepository.findByCategory_IdForUpdate(category.getId()).orElse(null);
+            }
         } else if (state.getCurrentCandidateId() == null) {
             state.changeRepresentative(saved.getId());
+            changed = true;
+        }
 
+        if (changed) {
             categorySelectionLogRepository.save(
                     CategorySelectionLog.of(
                             category.getId(),
