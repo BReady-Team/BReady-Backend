@@ -110,6 +110,7 @@ public class PlanService {
 
                     List<PlanDetailCandidateDto> candidateDtos =
                             category.getCandidates().stream()
+                                    .sorted((a,b) -> Long.compare(b.getId(), a.getId()))
                                     .map(candidate -> {
                                         boolean isRep = representativeId != null && representativeId.equals(candidate.getId());
 
