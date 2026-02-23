@@ -48,6 +48,34 @@ public class PlaceCandidateService {
             throw ApplicationException.from(PlaceErrorCase.DUPLICATE_PLACE_CANDIDATE);
         }
 
+        // 대표 장소 로직 - 카테고리에서 후보가 있다면 대표 장소 보장
+        CategoryState state = categoryStateRepository
+                .findByCategory_IdForUpdate(category.getId())
+                .orElse(null);
+
+        if (state == null) {
+
+            CategoryState newState = CategoryState.create(category, saved.getId());
+            categoryStateRepository.save(newState);
+
+            categorySelectionLogRepository.save(
+                    CategorySelectionLog.of(
+                            category.getId(),
+                            saved.getId(),
+                            LocalDateTime.now()
+                    )
+            );
+        } else if (state.getCurrentCandidateId() == null) {
+            state.changeRepresentative(saved.getId());
+
+            categorySelectionLogRepository.save(
+                    CategorySelectionLog.of(
+                            category.getId(),
+                            saved.getId(),
+                            LocalDateTime.now()
+                    ));
+        }
+
         return PlaceCandidateCreateResponse.builder()
                 .candidateId(saved.getId())
                 .place(PlaceSummaryResponse.builder()
