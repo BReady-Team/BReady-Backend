@@ -61,6 +61,7 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     left join fetch cand.place
     where pc.plan.id = :planId
       and pc.deletedAt is null
+      and (cand is null or cand.deletedAt is null)
     order by pc.sequence asc
 """)
     List<PlanCategory> findAllDetailByPlanId(@Param("planId") Long planId);
