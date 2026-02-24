@@ -23,6 +23,15 @@ spring:
     console:
       enabled: false
 
+  ai:
+    openai:
+      enabled: false
+    model:
+      chat: none
+      audio:
+        speech: none
+        transcription: none
+
 jwt:
   secret: ${JWT_SECRET}
   access-exp: 3600000
