@@ -19,7 +19,7 @@ public class Place extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 외부 API 장소 ID (카카오, 네이버 등)
+    // 카카오 외부 API 장소 ID
     @Column(name = "external_id", nullable = false, unique = true)
     private String externalId;
 
