@@ -36,3 +36,15 @@ jwt:
   secret: ${JWT_SECRET}
   access-exp: 3600000
   refresh-exp: 1209600000
+
+cloud:
+  aws:
+    region: ${CLOUD_AWS_REGION}
+
+    s3:
+      bucket: ${CLOUD_AWS_S3_BUCKET}
+      public-prefix: ${CLOUD_AWS_S3_PUBLIC_PREFIX}
+
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
