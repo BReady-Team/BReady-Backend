@@ -33,9 +33,13 @@ public class RecommendationController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "추천 성공",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "403", description = "플랜 접근 권한 없음",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "404", description = "플랜/카테고리/트리거/추천결과 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "502", description = "외부 장소 검색 실패 (API 장애/요청 오류)",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     public CommonResponse<PlaceRecommendationResponse> recommendPlaces(
