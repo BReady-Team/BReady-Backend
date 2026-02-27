@@ -4,13 +4,13 @@ import java.util.Map;
 
 public interface AiRerankTarget {
 
-    String getId();
-    String getName();
+    String id();
+    String name();
 
     default Map<String, Object> toPromptAttributes() {
         return Map.of(
-                "id", getId(),
-                "name", getName()
+                "id", id(),
+                "name", name()
         );
     }
 }
