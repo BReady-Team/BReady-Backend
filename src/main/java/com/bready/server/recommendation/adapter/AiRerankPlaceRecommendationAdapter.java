@@ -9,6 +9,7 @@ import com.bready.server.recommendation.service.PlaceRerankCandidate;
 import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.domain.TriggerType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @Primary
 @RequiredArgsConstructor
@@ -37,6 +39,9 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
             int radius,
             int limit
     ) {
+
+        log.debug("[AI] Rerank adapter activated - trigger={}, region={}", triggerType, region);
+
         List<PlaceRecommendationResponse.RecommendationItem> base =
                 ruleBasedAdapter.recommendPlaceCandidates(category, triggerType, region, latitude, longitude, radius, limit);
 
