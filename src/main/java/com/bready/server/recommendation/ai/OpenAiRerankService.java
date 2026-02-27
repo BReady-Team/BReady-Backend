@@ -47,7 +47,7 @@ public class OpenAiRerankService implements AiRerankService {
                                         }
                     """.formatted(
                     context == null ? "" : context,
-                    candidates
+                    candidatesJson
             );
 
             String content = chatClient.prompt()
