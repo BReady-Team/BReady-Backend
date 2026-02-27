@@ -48,3 +48,7 @@ cloud:
     credentials:
       access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
       secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+
+recommendation:
+  ai:
+    enabled: true
