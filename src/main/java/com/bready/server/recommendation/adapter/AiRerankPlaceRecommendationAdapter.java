@@ -40,7 +40,7 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
             int limit
     ) {
 
-        log.debug("[AI] Rerank adapter activated - trigger={}, region={}", triggerType, region);
+        log.info("[AI] Rerank adapter activated - trigger={}, region={}", triggerType, region);
 
         List<PlaceRecommendationResponse.RecommendationItem> base =
                 ruleBasedAdapter.recommendPlaceCandidates(category, triggerType, region, latitude, longitude, radius, limit);

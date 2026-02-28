@@ -3,7 +3,7 @@ package com.bready.server.recommendation.ai;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnBean(ChatClient.class)
+@ConditionalOnProperty(prefix = "recommendation.ai", name = "enabled", havingValue = "true")
 public class OpenAiRerankService implements AiRerankService {
 
     private final ChatClient chatClient;
