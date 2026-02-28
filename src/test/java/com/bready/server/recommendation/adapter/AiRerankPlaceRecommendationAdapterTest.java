@@ -38,8 +38,8 @@ public class AiRerankPlaceRecommendationAdapterTest {
 
         // given
         List<PlaceRecommendationResponse.RecommendationItem> base = List.of(
-                new PlaceRecommendationResponse.RecommendationItem("id1", "장소1", "주소1", BigDecimal.ONE, BigDecimal.ONE, true, "rule-이유1"),
-                new PlaceRecommendationResponse.RecommendationItem("id2", "장소2", "주소2", BigDecimal.TEN, BigDecimal.TEN, true, "rule-이유2")
+                new PlaceRecommendationResponse.RecommendationItem("id1", "장소1", "주소1", BigDecimal.ONE, BigDecimal.ONE, true, 100, "rule-이유1"),
+                new PlaceRecommendationResponse.RecommendationItem("id2", "장소2", "주소2", BigDecimal.TEN, BigDecimal.TEN, true, 100, "rule-이유2")
         );
 
         given(ruleBasedAdapter.recommendPlaceCandidates(any(), any(), any(), any(), any(), anyInt(), anyInt(), any()))
