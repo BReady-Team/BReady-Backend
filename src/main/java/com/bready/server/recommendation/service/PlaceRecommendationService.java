@@ -93,7 +93,7 @@ public class PlaceRecommendationService {
                 );
 
         if (items.isEmpty()) {
-            throw new ApplicationException(PlaceErrorCase.PLACE_NOT_FOUND);
+            return new PlaceRecommendationResponse(List.of());
         }
 
         return new PlaceRecommendationResponse(items);
