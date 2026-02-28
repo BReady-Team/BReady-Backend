@@ -70,9 +70,15 @@ public class PlaceRecommendationService {
 
         int limit = normalizeSize(query.size());
         int radius = (query.radius() != null) ? query.radius() : DEFAULT_RADIUS;
-        String region = firstNonBlank(query.region(), plan.getRegion());
 
-        Coordinate base = resolveBaseCoordinate(trigger.getTriggerType(), category.getId(), query);
+        ResolvedBase resolved = resolveBase(trigger.getTriggerType(), category.getId(), query);
+
+        String region = firstNonBlank(
+                normalizeRegion(query.region()),
+                normalizeRegion(resolved.region())
+        );
+
+        Coordinate base = resolved.coordinate();
 
         List<PlaceRecommendationResponse.RecommendationItem> items =
                 placeRecommendationPort.recommendPlaceCandidates(
@@ -92,14 +98,16 @@ public class PlaceRecommendationService {
         return new PlaceRecommendationResponse(items);
     }
 
-    private Coordinate resolveBaseCoordinate(TriggerType triggerType, Long categoryId, PlaceRecommendationQuery query) {
+    private ResolvedBase resolveBase(TriggerType triggerType, Long categoryId, PlaceRecommendationQuery query) {
 
         // trigger 중 현재 위치 기반으로 탐색해야 하는 trigger
         if (triggerType == TriggerType.FATIGUE || triggerType == TriggerType.DISTANCE_TOO_FAR) {
             if (query.latitude() == null || query.longitude() == null) {
                 throw new ApplicationException(PlaceErrorCase.LOCATION_REQUIRED);
             }
-            return new Coordinate(query.latitude(), query.longitude());
+            return new ResolvedBase(
+                    new Coordinate(query.latitude(), query.longitude()), null
+            );
         }
 
         CategoryState state = categoryStateRepository.findByCategory_Id(categoryId)
@@ -122,8 +130,20 @@ public class PlaceRecommendationService {
             throw new ApplicationException(PlaceErrorCase.LOCATION_REQUIRED);
         }
 
-        return new Coordinate(lat, lng);
+        String regionFromAddress = extractRegionFromAddress(candidate.getPlace().getAddress());
 
+        return new ResolvedBase(new Coordinate(lat, lng), regionFromAddress);
+    }
+
+    private String extractRegionFromAddress(String address) {
+        if (address == null) return null;
+        String a = address.trim();
+        if (a.isEmpty()) return null;
+
+        String[] parts = a.split("\\s+");
+        if (parts.length >= 2) return parts[0] + " " + parts[1];
+        if (parts.length == 1) return parts[0];
+        return null;
     }
 
     private Double toDouble(BigDecimal value) {
@@ -141,5 +161,16 @@ public class PlaceRecommendationService {
         return null;
     }
 
+    private String normalizeRegion(String region) {
+        if (region == null) return null;
+        String r = region.trim();
+        if (r.isEmpty()) return null;
+        if ("string".equalsIgnoreCase(r)) return null;
+        if ("null".equalsIgnoreCase(r)) return null;
+        return r;
+    }
+
     private record Coordinate(Double latitude, Double longitude) {}
+
+    private record ResolvedBase(Coordinate coordinate, String region) {}
 }

@@ -30,7 +30,7 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
     ) {
 
         PlaceCategoryType categoryType = category.getCategoryType();
-        String keyword = buildKeyword(categoryType, region);
+        String keyword = normalizedRegion(region);
 
         List<PlaceSearchResponse> candidates = placeSearchService.search(
                 categoryType,
@@ -58,10 +58,13 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
                 .toList();
     }
 
-    private String buildKeyword(PlaceCategoryType categoryType, String region) {
-        String base = categoryType.getKeyword();
-        if (region == null || region.isBlank()) return base;
-        return region + " " + base;
+    private String normalizedRegion(String region) {
+        if (region == null) return null;
+        String r = region.trim();
+        if (r.isEmpty()) return null;
+        if ("string".equalsIgnoreCase(r)) return null;
+        if ("null".equalsIgnoreCase(r)) return null;
+        return r;
     }
 
     private String buildReason(TriggerType triggerType) {
