@@ -29,8 +29,8 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
             int limit
     ) {
 
-        String keyword = buildKeyword(region, triggerType);
         PlaceCategoryType categoryType = category.getCategoryType();
+        String keyword = buildKeyword(categoryType, region);
 
         List<PlaceSearchResponse> candidates = placeSearchService.search(
                 categoryType,
@@ -58,20 +58,10 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
                 .toList();
     }
 
-    private String buildKeyword(String region, TriggerType triggerType) {
-        String base = triggerKeyword(triggerType);
+    private String buildKeyword(PlaceCategoryType categoryType, String region) {
+        String base = categoryType.getKeyword();
         if (region == null || region.isBlank()) return base;
         return region + " " + base;
-    }
-
-    private String triggerKeyword(TriggerType triggerType) {
-        return switch (triggerType) {
-            case WEATHER_BAD -> "실내";
-            case WAITING_TOO_LONG -> "근처";
-            case PLACE_CLOSED -> "대체";
-            case FATIGUE -> "휴식";
-            case DISTANCE_TOO_FAR -> "근처";
-        };
     }
 
     private String buildReason(TriggerType triggerType) {
