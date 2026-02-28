@@ -17,6 +17,7 @@ public record PlaceRecommendationResponse(
             BigDecimal latitude,
             BigDecimal longitude,
             Boolean isIndoor,
+            Integer distanceMeters,
             String reason
     ) {}
 

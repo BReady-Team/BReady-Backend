@@ -6,7 +6,6 @@ import com.bready.server.recommendation.ai.AiRerankService;
 import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
 import com.bready.server.recommendation.port.PlaceRecommendationPort;
 import com.bready.server.recommendation.service.PlaceRerankCandidate;
-import com.bready.server.trigger.domain.Trigger;
 import com.bready.server.trigger.domain.TriggerType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +81,7 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
                         item.latitude(),
                         item.longitude(),
                         item.isIndoor(),
+                        item.distanceMeters(),
                         reason
                 ));
             }
