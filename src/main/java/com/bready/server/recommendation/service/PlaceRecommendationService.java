@@ -88,7 +88,8 @@ public class PlaceRecommendationService {
                         base.latitude(),
                         base.longitude(),
                         radius,
-                        limit
+                        limit,
+                        resolved.excludeExternalId()
                 );
 
         if (items.isEmpty()) {
@@ -106,7 +107,7 @@ public class PlaceRecommendationService {
                 throw new ApplicationException(PlaceErrorCase.LOCATION_REQUIRED);
             }
             return new ResolvedBase(
-                    new Coordinate(query.latitude(), query.longitude()), null
+                    new Coordinate(query.latitude(), query.longitude()), null, null
             );
         }
 
@@ -131,8 +132,9 @@ public class PlaceRecommendationService {
         }
 
         String regionFromAddress = extractRegionFromAddress(candidate.getPlace().getAddress());
+        String excludeExternalId = candidate.getPlace().getExternalId();
 
-        return new ResolvedBase(new Coordinate(lat, lng), regionFromAddress);
+        return new ResolvedBase(new Coordinate(lat, lng), regionFromAddress, excludeExternalId);
     }
 
     private String extractRegionFromAddress(String address) {
@@ -172,5 +174,5 @@ public class PlaceRecommendationService {
 
     private record Coordinate(Double latitude, Double longitude) {}
 
-    private record ResolvedBase(Coordinate coordinate, String region) {}
+    private record ResolvedBase(Coordinate coordinate, String region, String excludeExternalId) {}
 }

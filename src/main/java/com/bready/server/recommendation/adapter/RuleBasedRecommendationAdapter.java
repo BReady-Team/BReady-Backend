@@ -26,7 +26,8 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
             Double latitude,
             Double longitude,
             int radius,
-            int limit
+            int limit,
+            String excludeExternalId
     ) {
 
         PlaceCategoryType categoryType = category.getCategoryType();
@@ -45,6 +46,7 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
         }
 
         return candidates.stream()
+                .filter(p -> excludeExternalId == null || !excludeExternalId.equals(p.externalId()))
                 .limit(limit)
                 .map(p -> new PlaceRecommendationResponse.RecommendationItem(
                         p.externalId(),

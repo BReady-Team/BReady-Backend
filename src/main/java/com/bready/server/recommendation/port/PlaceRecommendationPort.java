@@ -15,6 +15,7 @@ public interface PlaceRecommendationPort {
             Double latitude,
             Double longitude,
             int radius,
-            int limit
+            int limit,
+            String excludeExternalId
     );
 }

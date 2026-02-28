@@ -42,7 +42,7 @@ public class AiRerankPlaceRecommendationAdapterTest {
                 new PlaceRecommendationResponse.RecommendationItem("id2", "장소2", "주소2", BigDecimal.TEN, BigDecimal.TEN, true, "rule-이유2")
         );
 
-        given(ruleBasedAdapter.recommendPlaceCandidates(any(), any(), any(), any(), any(), anyInt(), anyInt()))
+        given(ruleBasedAdapter.recommendPlaceCandidates(any(), any(), any(), any(), any(), anyInt(), anyInt(), any()))
                 .willReturn(base);
 
         given(aiRerankService.rerank(anyString(), anyList()))
@@ -56,7 +56,7 @@ public class AiRerankPlaceRecommendationAdapterTest {
 
         // when
         List<PlaceRecommendationResponse.RecommendationItem> result =
-                adapter.recommendPlaceCandidates(null, TriggerType.WEATHER_BAD, "서울", 50.0, 50.0, 2000, 10);
+                adapter.recommendPlaceCandidates(null, TriggerType.WEATHER_BAD, "서울", 50.0, 50.0, 2000, 10, "id-original");
 
         // then
         assertThat(result.size()).isEqualTo(2);
@@ -65,7 +65,7 @@ public class AiRerankPlaceRecommendationAdapterTest {
         assertThat(result.get(1).externalId()).isEqualTo("id1");
         assertThat(result.get(1).reason()).isEqualTo("ai-이유1");
 
-        verify(ruleBasedAdapter).recommendPlaceCandidates(any(), any(), any(), any(), any(), anyInt(), anyInt());
+        verify(ruleBasedAdapter).recommendPlaceCandidates(any(), any(), any(), any(), any(), anyInt(), anyInt(), any());
         verify(aiRerankService).rerank(anyString(), anyList());
     }
 

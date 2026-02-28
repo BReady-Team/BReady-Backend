@@ -37,13 +37,14 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
             Double latitude,
             Double longitude,
             int radius,
-            int limit
+            int limit,
+            String excludeExternalId
     ) {
 
         log.info("[AI] Rerank adapter activated - trigger={}, region={}", triggerType, region);
 
         List<PlaceRecommendationResponse.RecommendationItem> base =
-                ruleBasedAdapter.recommendPlaceCandidates(category, triggerType, region, latitude, longitude, radius, limit);
+                ruleBasedAdapter.recommendPlaceCandidates(category, triggerType, region, latitude, longitude, radius, limit, excludeExternalId);
 
         if (base.isEmpty()) return base;
 
@@ -67,6 +68,7 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
         List<PlaceRecommendationResponse.RecommendationItem> reordered = new ArrayList<>();
 
         for (String id : result.rankedIds()) {
+            if (excludeExternalId != null && excludeExternalId.equals(id)) continue;
             PlaceRecommendationResponse.RecommendationItem item = itemMap.get(id);
             if (item != null) {
                 String reason = result.reasonsById() != null
