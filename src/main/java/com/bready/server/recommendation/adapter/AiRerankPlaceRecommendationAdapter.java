@@ -13,9 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -65,6 +63,7 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
                 ));
 
         List<PlaceRecommendationResponse.RecommendationItem> reordered = new ArrayList<>();
+        Set<String> added = new HashSet<>();
 
         for (String id : result.rankedIds()) {
             if (excludeExternalId != null && excludeExternalId.equals(id)) continue;
@@ -84,6 +83,13 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
                         item.distanceMeters(),
                         reason
                 ));
+                added.add(id);
+            }
+        }
+
+        for (PlaceRecommendationResponse.RecommendationItem item : base) {
+            if (!added.contains(item.externalId())) {
+                reordered.add(item);
             }
         }
 
