@@ -2,13 +2,15 @@ package com.bready.server.recommendation.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "recommendation.ai", name = "enabled", havingValue = "true")
@@ -63,8 +65,42 @@ public class OpenAiRerankService implements AiRerankService {
                 return new AiRerankResult(List.of(), Map.of());
             }
 
-            return parsed;
+            // 후보 화이트리스트 생성
+            Set<String> validIds = candidates.stream()
+                    .map(AiRerankTarget::id)
+                    .collect(Collectors.toSet());
+
+            Set<String> seen = new HashSet<>();
+            List<String> filteredIds = new ArrayList<>();
+
+            for (String id : parsed.rankedIds()) {
+
+                if (!validIds.contains(id)) {
+                    log.warn("[AI] Invalid ranked id detected: {}", id);
+                    continue;
+                }
+
+                if (seen.add(id)) {
+                    filteredIds.add(id);
+                }
+            }
+
+            Map<String, String> filteredReasons =
+                    Optional.ofNullable(parsed.reasonsById())
+                            .orElse(Map.of())
+                            .entrySet()
+                            .stream()
+                            .filter(e -> validIds.contains(e.getKey()))
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    Map.Entry::getValue,
+                                    (a, b) -> a
+                            ));
+
+            return new AiRerankResult(filteredIds, filteredReasons);
+
         } catch (Exception e) {
+            log.warn("[AI] Rerank parsing failed: {}", e.getMessage());
             return new AiRerankResult(List.of(), Map.of());
         }
     }
