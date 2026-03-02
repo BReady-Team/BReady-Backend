@@ -1,6 +1,7 @@
 package com.bready.server.trigger.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
@@ -40,9 +41,9 @@ class TriggerServiceTest {
 
     @Mock private PlanCategoryRepository planCategoryRepository;
     @Mock private TriggerRepository triggerRepository;
-    @Mock private PlanStatsService planStatsService;
     @Mock private CategoryStateRepository categoryStateRepository;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private PlaceCandidateRepository placeCandidateRepository;
 
     @Test
     @DisplayName("트리거 생성 성공")
@@ -68,6 +69,10 @@ class TriggerServiceTest {
                 .willReturn(Optional.of(state));
 
         given(state.getCurrentCandidateId()).willReturn(currentCandidateId);
+
+        given(placeCandidateRepository
+                .existsAliveByIdAndCategoryId(currentCandidateId, categoryId))
+                .willReturn(true);
 
         given(triggerRepository.save(any())).willReturn(trigger);
 
