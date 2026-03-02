@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -18,13 +19,28 @@ public class RuleBasedCategoryRecommendationAdapter implements CategoryRecommend
     @Override
     public List<CategoryRecommendationResponse.CategoryItem> recommendCategories(List<PlanCategory> planCategories, PlanCategory currentCategory, TriggerType triggerType) {
 
-        List<CategoryRecommendationResponse.CategoryItem> result = new ArrayList<>();
         PlaceCategoryType currentType = currentCategory.getCategoryType();
+
+        PlaceCategoryType prevType = null;
+        PlaceCategoryType nextType = null;
+
+        for (int i = 0; i < planCategories.size(); i++) {
+            if (Objects.equals(planCategories.get(i).getId(), currentCategory.getId())) {
+                if (i - 1 >= 0) prevType = planCategories.get(i - 1).getCategoryType();
+                if (i + 1 < planCategories.size()) nextType = planCategories.get(i + 1).getCategoryType();
+                break;
+            }
+        }
+
+        List<CategoryRecommendationResponse.CategoryItem> result = new ArrayList<>();
 
         // 화이트리스트
         for (PlaceCategoryType type : PlaceCategoryType.values()) {
 
             if (type == currentType) continue;
+
+            if (prevType != null && type == prevType) continue;
+            if (nextType != null && type == nextType) continue;
 
             if (triggerType == TriggerType.FATIGUE && type == PlaceCategoryType.WALK)  continue;
 
