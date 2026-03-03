@@ -61,6 +61,7 @@ public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, 
         select pc
         from PlaceCandidate pc
         where pc.category.id = :categoryId
+            and pc.deletedAt is null
     """)
     List<PlaceCandidate> findAllAliveByCategoryIdForUpdate(@Param("categoryId") Long categoryId);
 }
