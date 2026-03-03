@@ -1,8 +1,10 @@
 package com.bready.server.plan.repository;
 
 import com.bready.server.plan.domain.PlanCategory;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -65,4 +67,17 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     order by pc.sequence asc
 """)
     List<PlanCategory> findAllDetailByPlanId(@Param("planId") Long planId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select pc
+        from PlanCategory pc
+        where pc.id = :planCategoryId
+          and pc.plan.id = :planId
+          and pc.deletedAt is null
+    """)
+    Optional<PlanCategory> findAliveByIdAndPlanIdForUpdate(
+            @Param("planCategoryId") Long planCategoryId,
+            @Param("planId") Long planId
+    );
 }
