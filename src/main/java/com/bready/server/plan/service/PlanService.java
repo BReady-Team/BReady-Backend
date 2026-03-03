@@ -99,10 +99,10 @@ public class PlanService {
         Map<Long, Long> representativeMap =
                 categoryStateRepository.findAllByCategory_IdIn(categoryIds)
                         .stream()
+                        .filter(cs -> cs.getCurrentCandidateId() != null)
                         .collect(Collectors.toMap(
                                 cs -> cs.getCategory().getId(),
-                                CategoryState::getCurrentCandidateId,
-                                (existing, replacement) -> existing
+                                CategoryState::getCurrentCandidateId
                         ));
 
         List<PlanDetailCategoryDto> categoryDtos = categories.stream()
