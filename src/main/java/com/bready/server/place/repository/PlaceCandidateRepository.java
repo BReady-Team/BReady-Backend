@@ -1,9 +1,13 @@
 package com.bready.server.place.repository;
 
 import com.bready.server.place.domain.PlaceCandidate;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, Long> {
@@ -50,4 +54,13 @@ public interface PlaceCandidateRepository extends JpaRepository<PlaceCandidate, 
           and pc.deletedAt is null
     """)
     Optional<PlaceCandidate> findAliveByIdAndCategoryId(Long candidateId, Long categoryId);
+
+    // 카테고리의 살아있는 후보 전부 조회
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select pc
+        from PlaceCandidate pc
+        where pc.category.id = :categoryId
+    """)
+    List<PlaceCandidate> findAllAliveByCategoryIdForUpdate(@Param("categoryId") Long categoryId);
 }
