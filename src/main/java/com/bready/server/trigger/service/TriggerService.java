@@ -1,6 +1,7 @@
 package com.bready.server.trigger.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.repository.CategoryStateRepository;
@@ -26,6 +27,7 @@ public class TriggerService {
     private final TriggerRepository triggerRepository;
     private final CategoryStateRepository categoryStateRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PlaceCandidateRepository placeCandidateRepository;
 
     @Transactional
     public TriggerCreateResponse createTrigger(TriggerCreateRequest request) {
@@ -43,6 +45,17 @@ public class TriggerService {
                 );
 
         Long currentCandidateId = state.getCurrentCandidateId();
+
+        // 후보 장소가 없을 때 트리거 발생 차단
+        if (currentCandidateId == null) {
+            throw ApplicationException.from(TriggerErrorCase.CATEGORY_STATE_NOT_FOUND);
+        }
+
+        // 대표 후보 alive 검증
+        boolean alive = placeCandidateRepository.existsAliveByIdAndCategoryId(currentCandidateId, category.getId());
+        if (!alive) {
+            throw ApplicationException.from(TriggerErrorCase.CATEGORY_STATE_NOT_FOUND);
+        }
 
         Trigger trigger = triggerRepository.save(
                 Trigger.create(
