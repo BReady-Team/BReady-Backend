@@ -38,7 +38,7 @@ public class RecommendValidationService {
         PlanCategory currentCategory = planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(request.categoryId(), request.planId())
                 .orElseThrow(() -> new ApplicationException(CategoryErrorCase.CATEGORY_NOT_FOUND));
 
-        Trigger trigger = triggerRepository.findById(request.triggerId())
+        Trigger trigger = triggerRepository.findByIdAndDeletedAtIsNull(request.triggerId())
                 .orElseThrow(() -> new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND));
 
         if (!trigger.getPlan().getId().equals(request.planId()) || !trigger.getCategory().getId().equals(request.categoryId())) {
