@@ -52,6 +52,8 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
         String context = buildContext(triggerType, region);
         AiRerankResult result = aiRerankService.rerank(context, targets);
 
+        if (result == null) return base;
+
         List<String> rankedIds = Optional.ofNullable(result.rankedIds()).orElse(List.of());
         if (rankedIds.isEmpty()) return base;
 
