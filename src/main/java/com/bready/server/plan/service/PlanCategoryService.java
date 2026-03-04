@@ -1,11 +1,14 @@
 package com.bready.server.plan.service;
 
 import com.bready.server.global.exception.ApplicationException;
+import com.bready.server.place.domain.PlaceCandidate;
+import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.dto.*;
 import com.bready.server.plan.exception.CategoryErrorCase;
 import com.bready.server.plan.exception.PlanErrorCase;
+import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ public class PlanCategoryService {
 
     private final PlanRepository planRepository;
     private final PlanCategoryRepository planCategoryRepository;
+    private final CategoryStateRepository categoryStateRepository;
+    private final PlaceCandidateRepository placeCandidateRepository;
 
     @Transactional
     public PlanCategoryCreateResponse addCategory(Long userId, Long planId, PlanCategoryCreateRequest request) {
@@ -163,6 +168,51 @@ public class PlanCategoryService {
 
         return PlanCategoryOrderUpdateResponse.builder()
                 .planId(planId)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    @Transactional
+    public PlanCategoryTypeUpdateResponse updateCategoryType(
+            Long userId,
+            Long planId,
+            Long planCategoryId,
+            PlanCategoryTypeUpdateRequest request
+    ) {
+        Plan plan = planRepository.findByIdAndDeletedAtIsNullForUpdate(planId)
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        if (!plan.getOwnerId().equals(userId)) {
+            throw new ApplicationException(CategoryErrorCase.CATEGORY_ACCESS_DENIED);
+        }
+
+        PlanCategory category = planCategoryRepository
+                .findAliveByIdAndPlanIdForUpdate(planCategoryId, planId)
+                .orElseThrow(() -> new ApplicationException(CategoryErrorCase.CATEGORY_NOT_FOUND));
+
+        // 타입 변경
+        category.updateCategoryType(request.getCategoryType());
+
+        // 후보 전부 soft delete (락 걸고 조회)
+        List<PlaceCandidate> candidates =
+                placeCandidateRepository.findAllAliveByCategoryIdForUpdate(planCategoryId);
+
+        for (PlaceCandidate pc : candidates) {
+            pc.softDelete();
+        }
+
+        boolean resetCandidates = !candidates.isEmpty();
+
+        // 대표 상태 초기화
+        categoryStateRepository.findByCategory_IdForUpdate(planCategoryId)
+                .ifPresent(cs -> cs.changeRepresentative(null));
+
+        return PlanCategoryTypeUpdateResponse.builder()
+                .planId(planId)
+                .planCategoryId(planCategoryId)
+                .categoryType(category.getCategoryType())
+                .sequence(category.getSequence())
+                .resetCandidates(resetCandidates)
                 .updatedAt(LocalDateTime.now())
                 .build();
     }

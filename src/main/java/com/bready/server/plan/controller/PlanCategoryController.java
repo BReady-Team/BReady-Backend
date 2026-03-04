@@ -49,6 +49,34 @@ public class PlanCategoryController {
         return CommonResponse.success(planCategoryService.addCategory(userId, planId, request));
     }
 
+    @PatchMapping("/{planCategoryId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "카테고리 타입 변경",
+            description = "플랜에 속한 카테고리의 타입을 변경하고, 기존 후보 장소 및 대표 상태를 초기화합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "카테고리 타입 변경 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 오류",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "403", description = "카테고리 수정 권한 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "404", description = "플랜 또는 카테고리 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "500", description = "카테고리 타입 변경 실패",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<PlanCategoryTypeUpdateResponse> updateCategoryType(
+            @CurrentUser Long userId,
+            @PathVariable Long planId,
+            @PathVariable Long planCategoryId,
+            @Valid @RequestBody PlanCategoryTypeUpdateRequest request
+    ) {
+        return CommonResponse.success(
+                planCategoryService.updateCategoryType(userId, planId, planCategoryId, request)
+        );
+    }
 
     @DeleteMapping("/{planCategoryId}")
     @ResponseStatus(HttpStatus.OK)
