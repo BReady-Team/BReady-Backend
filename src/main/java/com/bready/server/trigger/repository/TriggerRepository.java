@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TriggerRepository extends JpaRepository<Trigger, Long> {
     interface TriggerTypeCount {
@@ -42,4 +43,6 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
       and (:from is null or t.occurredAt >= :from)
     """)
     long countByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
+
+    Optional<Trigger> findByIdAndDeletedAtIsNull(Long id);
 }

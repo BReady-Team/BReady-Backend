@@ -2,9 +2,8 @@ package com.bready.server.recommendation.controller;
 
 import com.bready.server.global.auth.CurrentUser;
 import com.bready.server.global.response.CommonResponse;
-import com.bready.server.recommendation.dto.PlaceRecommendationQuery;
-import com.bready.server.recommendation.dto.PlaceRecommendationRequest;
-import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
+import com.bready.server.recommendation.dto.*;
+import com.bready.server.recommendation.service.CategoryRecommendationService;
 import com.bready.server.recommendation.service.PlaceRecommendationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class RecommendationController {
 
     private final PlaceRecommendationService recommendationService;
+    private final CategoryRecommendationService categoryRecommendationService;
 
     @PostMapping("/places")
     @Operation(
@@ -48,5 +48,25 @@ public class RecommendationController {
             @RequestBody @Valid PlaceRecommendationRequest request
     ) {
         return CommonResponse.success(recommendationService.recommendPlaces(userId, request, query));
+    }
+
+    @PostMapping("/categories")
+    @Operation(
+            summary = "전환 카테고리 추천",
+            description = "트리거 발생 이후, 플랜 전체 흐름을 고려한 카테고리 대체 추천"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "추천 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "403", description = "플랜 접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "404", description = "플랜/카테고리/트리거 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<CategoryRecommendationResponse> recommendCategories(
+            @CurrentUser Long userId,
+            @RequestBody @Valid CategoryRecommendationRequest request
+    ) {
+        return CommonResponse.success(categoryRecommendationService.recommendCategories(userId, request));
     }
 }
