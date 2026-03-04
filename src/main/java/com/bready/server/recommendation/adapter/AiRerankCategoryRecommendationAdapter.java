@@ -1,5 +1,6 @@
 package com.bready.server.recommendation.adapter;
 
+import com.bready.server.place.domain.PlaceCategoryType;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.recommendation.ai.AiRerankResult;
 import com.bready.server.recommendation.ai.AiRerankService;
@@ -22,17 +23,17 @@ import java.util.*;
 @ConditionalOnProperty(prefix = "recommendation.ai", name = "enabled", havingValue = "true")
 public class AiRerankCategoryRecommendationAdapter implements CategoryRecommendationPort {
 
-    private final RuleBasedCategoryRecommendationAdapter rulBasedAdapter;
+    private final RuleBasedCategoryRecommendationAdapter ruleBasedAdapter;
     private final AiRerankService aiRerankService;
 
     @Override
     public List<CategoryRecommendationResponse.CategoryItem> recommendCategories(List<PlanCategory> planCategories, PlanCategory currentCategory, TriggerType triggerType) {
-        List<CategoryRecommendationResponse.CategoryItem> base = rulBasedAdapter.recommendCategories(planCategories, currentCategory, triggerType);
+        List<CategoryRecommendationResponse.CategoryItem> base = ruleBasedAdapter.recommendCategories(planCategories, currentCategory, triggerType);
 
         if (base.isEmpty()) return base;
 
         List<CategoryRerankCandidate> targets = base.stream()
-                .map(i -> new CategoryRerankCandidate(i.categoryType().name(), i.label()))
+                .map(i -> new CategoryRerankCandidate(i.categoryType().name(), i.label(), i.categoryType()))
                 .toList();
 
         String context = buildContext(triggerType, currentCategory, planCategories);
@@ -85,10 +86,36 @@ public class AiRerankCategoryRecommendationAdapter implements CategoryRecommenda
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("");
 
-        return "trigger=" + triggerType
-                + ", current=" + currentCategory.getCategoryType().name()
-                + ", planFlow=[" + flow + "]";
+        return """
+        당신은 플랜 전환 카테고리 추천 시스템이다.
+        반드시 candidates에 제공된 id만 사용해야 한다.
+        새로운 후보를 생성하면 안 된다.
+
+        추천 기준
+        - 트리거 해결에 도움이 되는 활동
+        - 현재 카테고리와 성격이 다른 활동
+        - 플랜 흐름의 다양성 유지
+
+        trigger=%s
+        current=%s
+        planFlow=[%s]
+        """.formatted(
+                triggerType,
+                currentCategory.getCategoryType().name(),
+                flow
+        );
     }
 
-    private record CategoryRerankCandidate(String id, String name) implements AiRerankTarget {}
+    private record CategoryRerankCandidate(String id, String name, PlaceCategoryType type) implements AiRerankTarget {
+        @Override
+        public Map<String, Object> toPromptAttributes() {
+            return Map.of(
+                    "id", id,
+                    "name", name,
+                    "indoor", type.isIndoor(),
+                    "keyword", type.getKeyword()
+            );
+        }
+    }
+
 }
