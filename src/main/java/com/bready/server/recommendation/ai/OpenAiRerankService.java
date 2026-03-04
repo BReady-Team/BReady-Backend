@@ -59,6 +59,10 @@ public class OpenAiRerankService implements AiRerankService {
                     .call()
                     .content();
 
+            content = content.replace("```json", "")
+                    .replace("```","")
+                    .trim();
+
             AiRerankResult parsed = objectMapper.readValue(content, AiRerankResult.class);
 
             if (parsed == null || parsed.rankedIds() == null || parsed.rankedIds().isEmpty()) {

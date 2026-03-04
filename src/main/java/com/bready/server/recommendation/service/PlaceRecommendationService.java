@@ -68,6 +68,10 @@ public class PlaceRecommendationService {
             throw new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND);
         }
 
+        if (trigger.getTriggerType() == TriggerType.WEATHER_BAD && !category.getCategoryType().isIndoor()) {
+            return new PlaceRecommendationResponse(List.of());
+        }
+
         int limit = normalizeSize(query.size());
         int radius = (query.radius() != null) ? query.radius() : DEFAULT_RADIUS;
 
