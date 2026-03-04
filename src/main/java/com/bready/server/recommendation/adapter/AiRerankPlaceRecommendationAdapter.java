@@ -52,20 +52,20 @@ public class AiRerankPlaceRecommendationAdapter implements PlaceRecommendationPo
         String context = buildContext(triggerType, region);
         AiRerankResult result = aiRerankService.rerank(context, targets);
 
-        if (result.rankedIds() == null || result.rankedIds().isEmpty()) {
-            return base;
-        }
+        List<String> rankedIds = Optional.ofNullable(result.rankedIds()).orElse(List.of());
+        if (rankedIds.isEmpty()) return base;
 
         Map<String, PlaceRecommendationResponse.RecommendationItem> itemMap =
                 base.stream().collect(Collectors.toMap(
                         PlaceRecommendationResponse.RecommendationItem::externalId,
-                        i -> i
+                        i -> i,
+                        (a,b) -> a
                 ));
 
         List<PlaceRecommendationResponse.RecommendationItem> reordered = new ArrayList<>();
         Set<String> added = new HashSet<>();
 
-        for (String id : result.rankedIds()) {
+        for (String id : rankedIds) {
             if (excludeExternalId != null && excludeExternalId.equals(id)) continue;
             PlaceRecommendationResponse.RecommendationItem item = itemMap.get(id);
             if (item != null) {
