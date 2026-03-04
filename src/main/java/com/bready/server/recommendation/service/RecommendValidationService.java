@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RecommendValidationService {
@@ -24,7 +26,7 @@ public class RecommendValidationService {
     private final TriggerRepository triggerRepository;
 
     @Transactional(readOnly = true)
-    public void validateUserAndLoad(Long userId, CategoryRecommendationRequest request) {
+    public Validated validateUserAndLoad(Long userId, CategoryRecommendationRequest request) {
 
         Plan plan = planRepository.findByIdAndDeletedAtIsNull(request.planId())
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
@@ -43,6 +45,9 @@ public class RecommendValidationService {
             throw new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND);
         }
 
-        planCategoryRepository.findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(request.planId());
+        List<PlanCategory> planCategories = planCategoryRepository.findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(request.planId());
+        return new Validated(plan, currentCategory, trigger, planCategories);
     }
+
+    public record Validated(Plan plan, PlanCategory currentCategory, Trigger trigger, List<PlanCategory> planCategoreis) {}
 }
