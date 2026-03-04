@@ -24,7 +24,7 @@ public class CategoryRecommendationService {
         RecommendValidationService.Validated v = validationService.validateUserAndLoad(userId, request);
 
         List<CategoryRecommendationResponse.CategoryItem> items = categoryRecommendationPort.recommendCategories(
-                v.planCategoreis(), v.currentCategory(), v.trigger().getTriggerType()
+                v.planCategories(), v.currentCategory(), v.trigger().getTriggerType()
         );
 
         return new CategoryRecommendationResponse(items);

@@ -49,5 +49,5 @@ public class RecommendValidationService {
         return new Validated(plan, currentCategory, trigger, planCategories);
     }
 
-    public record Validated(Plan plan, PlanCategory currentCategory, Trigger trigger, List<PlanCategory> planCategoreis) {}
+    public record Validated(Plan plan, PlanCategory currentCategory, Trigger trigger, List<PlanCategory> planCategories) {}
 }
