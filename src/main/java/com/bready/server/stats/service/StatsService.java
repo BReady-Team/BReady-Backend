@@ -26,7 +26,7 @@ public class StatsService {
 
         LocalDateTime startAt = resolveStartAt(period);
 
-        long totalPlans = planRepository.countByOwnerId(ownerId);
+        long totalPlans = planRepository.countActiveByOwnerId(ownerId);
         long totalSwitches = switchLogRepository.countByOwnerIdAndPeriod(ownerId, startAt);
         long recentCount = decisionRepository.countByOwnerIdAndPeriod(ownerId, startAt);
 
