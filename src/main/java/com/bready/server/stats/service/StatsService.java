@@ -3,8 +3,8 @@ package com.bready.server.stats.service;
 import com.bready.server.plan.repository.PlanRepository;
 import com.bready.server.stats.domain.StatsPeriod;
 import com.bready.server.stats.dto.StatsSummaryResponse;
+import com.bready.server.trigger.repository.DecisionRepository;
 import com.bready.server.trigger.repository.SwitchLogRepository;
-import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class StatsService {
 
     private final PlanRepository planRepository;
     private final SwitchLogRepository switchLogRepository;
-    private final TriggerRepository triggerRepository;
+    private final DecisionRepository decisionRepository;
 
     public StatsSummaryResponse getSummary(Long ownerId, StatsPeriod period) {
 
@@ -28,7 +28,7 @@ public class StatsService {
 
         long totalPlans = planRepository.countByOwnerId(ownerId);
         long totalSwitches = switchLogRepository.countByOwnerIdAndPeriod(ownerId, startAt);
-        long recentCount = triggerRepository.countByOwnerIdAndPeriod(ownerId, startAt);
+        long recentCount = decisionRepository.countByOwnerIdAndPeriod(ownerId, startAt);
 
         double avgSwitchesPerPlan = calculateAvg(totalSwitches, totalPlans);
 

@@ -51,4 +51,17 @@ public interface DecisionRepository extends JpaRepository<Decision, Long> {
             @Param("decisionType") DecisionType decisionType,
             Pageable pageable
     );
+
+    @Query("""
+        select count(d)
+        from Decision d
+        join d.trigger t
+        join t.plan p
+        where p.ownerId = :ownerId
+            and (:startAt is null or d.decidedAt >= :startAt)
+    """)
+    long countByOwnerIdAndPeriod(
+            @Param("ownerId") Long ownerId,
+            @Param("startAt") LocalDateTime startAt
+    );
 }
