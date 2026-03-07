@@ -38,7 +38,7 @@ public class RecentActivityStatsController {
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
             @ApiResponse(responseCode = "400", description = "period 값이 잘못됨",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-            @ApiResponse(responseCode = "409", description = "limit 값 오류",
+            @ApiResponse(responseCode = "400", description = "limit 값 오류",
                     content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     public CommonResponse<RecentActivitiesResponse> getRecentActivities(
