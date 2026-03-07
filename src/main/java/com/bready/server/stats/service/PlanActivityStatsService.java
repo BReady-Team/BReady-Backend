@@ -37,7 +37,7 @@ public class PlanActivityStatsService {
         Plan plan = planRepository.findByIdAndOwnerId(planId, ownerId)
                 .orElseThrow(() -> ApplicationException.from(StatsErrorCase.INVALID_PARAMETER));
 
-        PageRequest pageable = PageRequest.of(0, limit);
+        PageRequest pageable = PageRequest.of(0, limit * 2);
 
         List<SwitchLogRepository.SwitchActivityRow> switchRows =
                 switchLogRepository.findRecentSwitchActivities(ownerId, planId, pageable);

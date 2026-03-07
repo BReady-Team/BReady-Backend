@@ -29,28 +29,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
         Long getTotalSwitches();
     }
 
-    /*
-    @Query("""
-                select
-                    p.id as planId,
-                    p.title as planTitle,
-                    p.planDate as planDate,
-                    p.region as region,
-                    count(sl.id) as totalSwitches
-                from Plan p
-                left join Trigger t on t.plan = p
-                left join Decision d on d.trigger = t
-                left join SwitchLog sl on sl.decision = d
-                where p.ownerId = :ownerId
-                group by p.id, p.title, p.planDate, p.region
-                order by p.planDate desc
-            """)
-    List<PlanSwitchStatsRow> findPlanSwitchStats(
-            @Param("ownerId") Long ownerId,
-            Pageable pageable
-    );
-     */
-
     @Query("""
                 select p
                 from Plan p
@@ -60,12 +38,12 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     Optional<Plan> findByIdAndOwnerId(@Param("planId") Long planId, @Param("ownerId") Long ownerId);
 
     @Query("""
-                select count(p)
-                from Plan p
-                where p.ownerId = :ownerId
-                            and p.deletedAt is null
-            """)
-    long countByOwnerId(@Param("ownerId") Long ownerId);
+        select count(p)
+            from Plan p
+        where p.ownerId = :ownerId
+            and p.deletedAt is null
+    """)
+    long countActiveByOwnerId(@Param("ownerId") Long ownerId);
 
     // 조회용 - 락 없음
     Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
@@ -105,6 +83,4 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
       and p.deletedAt is null
 """)
     Optional<Plan> findByIdAndDeletedAtIsNullForUpdate(@Param("id") Long id);
-
-
 }

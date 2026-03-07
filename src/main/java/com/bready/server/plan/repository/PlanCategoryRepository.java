@@ -33,39 +33,28 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
     List<PlanCategory> findAllByPlan_IdAndDeletedAtIsNullOrderBySequenceAsc(Long planId);
 
     @Query("""
-    select pc
-    from PlanCategory pc
-    where pc.plan.id = :planId
-      and pc.deletedAt is null
-    order by pc.sequence desc
-""")
-    List<PlanCategory> findLastByPlanId(@Param("planId") Long planId, Pageable pageable);
-
-
-    // planIds로만 category 조회 (성능 개선)
-    @Query("""
-        select
-            pc.plan.id as planId,
-            pc.categoryType as categoryType
+        select pc
         from PlanCategory pc
-        where pc.plan.id in :planIds
+        where pc.plan.id = :planId
+          and pc.deletedAt is null
+        order by pc.sequence desc
     """)
-    List<PlanCategoryTypeRow> findCategoryTypesByPlanIds(@Param("planIds") List<Long> planIds);
+    List<PlanCategory> findLastByPlanId(@Param("planId") Long planId, Pageable pageable);
 
     // 장소 후보쪽에서 category가 plan에 속하는지 검증하기 위해서 추가
     Optional<PlanCategory> findByIdAndPlan_Id(Long id, Long planId);
 
     // 플랜 상세 조회 - 카테고리 + 후보 + place
     @Query("""
-    select distinct pc
-    from PlanCategory pc
-    left join fetch pc.candidates cand
-    left join fetch cand.place
-    where pc.plan.id = :planId
-      and pc.deletedAt is null
-      and (cand is null or cand.deletedAt is null)
-    order by pc.sequence asc
-""")
+        select distinct pc
+        from PlanCategory pc
+        left join fetch pc.candidates cand
+        left join fetch cand.place
+        where pc.plan.id = :planId
+          and pc.deletedAt is null
+          and (cand is null or cand.deletedAt is null)
+        order by pc.sequence asc
+    """)
     List<PlanCategory> findAllDetailByPlanId(@Param("planId") Long planId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -80,4 +69,15 @@ public interface PlanCategoryRepository extends JpaRepository<PlanCategory, Long
             @Param("planCategoryId") Long planCategoryId,
             @Param("planId") Long planId
     );
+
+    @Query("""
+        select
+            pc.plan.id as planId,
+            pc.categoryType as categoryType
+        from PlanCategory pc
+        where pc.plan.id in :planIds
+          and pc.deletedAt is null
+        order by pc.plan.id asc, pc.sequence asc
+    """)
+    List<PlanCategoryTypeRow> findCategoryTypesByPlanIds(@Param("planIds") List<Long> planIds);
 }

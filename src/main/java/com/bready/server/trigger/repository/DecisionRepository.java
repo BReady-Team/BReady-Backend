@@ -19,6 +19,15 @@ public interface DecisionRepository extends JpaRepository<Decision, Long> {
         LocalDateTime getCreatedAt();
     }
 
+    interface RecentKeepActivityRow {
+        Long getDecisionId();
+        Long getPlanId();
+        String getPlanTitle();
+        TriggerType getTriggerType();
+        LocalDateTime getCreatedAt();
+    }
+
+
     boolean existsByTrigger_Id(Long triggerId);
     Optional<Decision> findByTrigger_Id(Long triggerId);
 
@@ -49,6 +58,41 @@ public interface DecisionRepository extends JpaRepository<Decision, Long> {
             @Param("ownerId") Long ownerId,
             @Param("planId") Long planId,
             @Param("decisionType") DecisionType decisionType,
+            Pageable pageable
+    );
+
+    @Query("""
+        select count(d)
+        from Decision d
+        join d.trigger t
+        join t.plan p
+        where p.ownerId = :ownerId
+            and (:startAt is null or d.decidedAt >= :startAt)
+    """)
+    long countByOwnerIdAndPeriod(
+            @Param("ownerId") Long ownerId,
+            @Param("startAt") LocalDateTime startAt
+    );
+
+    @Query("""
+        select
+            d.id as decisionId,
+            p.id as planId,
+            p.title as planTitle,
+            t.triggerType as triggerType,
+            d.decidedAt as createdAt
+        from Decision d
+        join d.trigger t
+        join t.plan p
+        where p.ownerId = :ownerId
+          and p.deletedAt is null
+          and d.decisionType = com.bready.server.trigger.domain.DecisionType.KEEP
+          and (:startAt is null or d.decidedAt >= :startAt)
+        order by d.decidedAt desc
+    """)
+    List<RecentKeepActivityRow> findRecentKeepActivities(
+            @Param("ownerId") Long ownerId,
+            @Param("startAt") LocalDateTime startAt,
             Pageable pageable
     );
 }

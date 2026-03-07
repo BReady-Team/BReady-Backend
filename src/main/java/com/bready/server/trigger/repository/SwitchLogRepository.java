@@ -17,6 +17,14 @@ public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
         LocalDateTime getCreatedAt();
     }
 
+    interface RecentSwitchActivityRow {
+        Long getLogId();
+        Long getPlanId();
+        String getPlanTitle();
+        TriggerType getTriggerType();
+        LocalDateTime getCreatedAt();
+    }
+
     @Query("""
         select
             sl.id as logId,
@@ -56,6 +64,28 @@ public interface SwitchLogRepository extends JpaRepository<SwitchLog, Long> {
           and (:from is null or sl.createdAt >= :from)
     """)
     long countSwitchByPlanIdAndPeriod(@Param("planId") Long planId, @Param("from") LocalDateTime from);
+
+    @Query("""
+        select
+            sl.id as logId,
+            p.id as planId,
+            p.title as planTitle,
+            t.triggerType as triggerType,
+            sl.createdAt as createdAt
+        from SwitchLog sl
+        join sl.decision d
+        join d.trigger t
+        join t.plan p
+        where p.ownerId = :ownerId
+          and p.deletedAt is null
+          and (:startAt is null or sl.createdAt >= :startAt)
+        order by sl.createdAt desc
+    """)
+    List<RecentSwitchActivityRow> findRecentSwitchActivitiesAllPlans(
+            @Param("ownerId") Long ownerId,
+            @Param("startAt") LocalDateTime startAt,
+            Pageable pageable
+    );
 
     boolean existsByDecision_Id(Long decisionId);
 }
