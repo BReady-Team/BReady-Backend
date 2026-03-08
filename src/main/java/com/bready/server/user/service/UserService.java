@@ -56,22 +56,14 @@ public class UserService {
 
     @Transactional
     public void updateNickname(Long userId, String nickname) {
-
-        User user = userRepository.findByIdWithProfile(userId)
-                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
-
-        UserProfile profile = user.getUserProfile();
+        UserProfile profile = getUserProfile(userId);
 
         profile.changeNickname(nickname);
     }
 
     @Transactional
     public void updateBio(Long userId, String bio) {
-
-        User user = userRepository.findByIdWithProfile(userId)
-                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
-
-        UserProfile profile = user.getUserProfile();
+        UserProfile profile = getUserProfile(userId);
 
         profile.changeBio(bio);
     }
@@ -84,10 +76,7 @@ public class UserService {
         }
 
         // 사용자 조회
-        User user = userRepository.findByIdWithProfile(userId)
-                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
-
-        UserProfile profile = user.getUserProfile();
+        UserProfile profile = getUserProfile(userId);
 
         // 기존 이미지 URL 저장
         String oldImageUrl = profile.getProfileImageUrl();
@@ -115,6 +104,13 @@ public class UserService {
         if (index == -1) { return null;}
 
         return url.substring(index + ".amazonaws.com/".length());
+    }
+
+    private UserProfile getUserProfile(Long userId) {
+        User user = userRepository.findByIdWithProfile(userId)
+                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
+
+        return user.getUserProfile();
     }
 }
 
