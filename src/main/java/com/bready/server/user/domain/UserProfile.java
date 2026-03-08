@@ -30,4 +30,12 @@ public class UserProfile {
         user.setUserProfile(profile);
         return profile;
     }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changeBio(String bio) {
+        this.bio = bio;
+    }
 }

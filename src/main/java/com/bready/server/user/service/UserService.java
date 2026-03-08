@@ -48,5 +48,27 @@ public class UserService {
                 .joinedAt(joinedAt)
                 .build();
     }
+
+    @Transactional
+    public void updateNickname(Long userId, String nickname) {
+
+        User user = userRepository.findByIdWithProfile(userId)
+                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
+
+        UserProfile profile = user.getUserProfile();
+
+        profile.changeNickname(nickname);
+    }
+
+    @Transactional
+    public void updateBio(Long userId, String bio) {
+
+        User user = userRepository.findByIdWithProfile(userId)
+                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
+
+        UserProfile profile = user.getUserProfile();
+
+        profile.changeBio(bio);
+    }
 }
 
