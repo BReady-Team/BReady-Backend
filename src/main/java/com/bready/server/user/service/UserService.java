@@ -70,12 +70,6 @@ public class UserService {
 
     @Transactional
     public String updateProfileImage(Long userId, MultipartFile file) {
-
-        if (userId == null) {
-            throw new ApplicationException(UserErrorCase.AUTH_REQUIRED);
-        }
-
-        // 사용자 조회
         UserProfile profile = getUserProfile(userId);
 
         // 기존 이미지 URL 저장
@@ -83,16 +77,19 @@ public class UserService {
 
         // 새 이미지 업로드
         String fileKey = s3Uploader.uploadAndReturnKey(file, "profiles");
+
         String url = s3Uploader.buildUrl(fileKey);
 
         profile.changeProfileImage(url);
 
         if (oldImageUrl != null && !oldImageUrl.isBlank()) {
             String oldKey = extractKeyFromUrl(oldImageUrl);
-            if (oldKey != null) try {
-                s3Uploader.delete(oldKey);
-            } catch (Exception e) {
-                log.warn("기존 프로필 이미지 삭제 실패: {}", oldKey, e);
+            if (oldKey != null) {
+                try {
+                    s3Uploader.delete(oldKey);
+                } catch (Exception e) {
+                    log.warn("기존 프로필 이미지 삭제 실패: {}", oldKey, e);
+                }
             }
         }
         return url;
