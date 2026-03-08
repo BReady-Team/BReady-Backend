@@ -8,6 +8,7 @@ import com.bready.server.user.dto.UserProfileDto;
 import com.bready.server.user.exception.UserErrorCase;
 import com.bready.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -87,24 +89,23 @@ public class UserService {
 
         UserProfile profile = user.getUserProfile();
 
-        // 기존 이미지 삭제 (있을 경우)
-        if (profile.getProfileImageUrl() != null && !profile.getProfileImageUrl().isBlank()) {
-
-            String oldKey = extractKeyFromUrl(profile.getProfileImageUrl());
-
-            if (oldKey != null) {
-                s3Uploader.delete(oldKey);
-            }
-        }
+        // 기존 이미지 URL 저장
+        String oldImageUrl = profile.getProfileImageUrl();
 
         // 새 이미지 업로드
         String fileKey = s3Uploader.uploadAndReturnKey(file, "profiles");
-
-        // 공개 URL 생성
         String url = s3Uploader.buildUrl(fileKey);
 
         profile.changeProfileImage(url);
 
+        if (oldImageUrl != null && !oldImageUrl.isBlank()) {
+            String oldKey = extractKeyFromUrl(oldImageUrl);
+            if (oldKey != null) try {
+                s3Uploader.delete(oldKey);
+            } catch (Exception e) {
+                log.warn("기존 프로필 이미지 삭제 실패: {}", oldKey, e);
+            }
+        }
         return url;
     }
 

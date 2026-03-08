@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +52,7 @@ public class UserController {
     })
     public CommonResponse<Void> updateNickname(
             @CurrentUser Long userId,
-            @RequestBody UpdateNicknameRequest request
+            @Valid @RequestBody UpdateNicknameRequest request
     ) {
         userService.updateNickname(userId, request.nickname());
         return CommonResponse.success(null);
@@ -69,7 +70,7 @@ public class UserController {
     })
     public CommonResponse<Void> updateBio(
             @CurrentUser Long userId,
-            @RequestBody UpdateBioRequest request
+            @Valid @RequestBody UpdateBioRequest request
     ) {
         userService.updateBio(userId, request.bio());
         return CommonResponse.success(null);
