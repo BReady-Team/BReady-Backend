@@ -12,6 +12,9 @@ public class UserProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     private String nickname;
 
     private String bio;
@@ -29,5 +32,17 @@ public class UserProfile {
         // 양방향 연관관계 세팅 추가
         user.setUserProfile(profile);
         return profile;
+    }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changeBio(String bio) {
+        this.bio = bio;
+    }
+
+    public void changeProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }
