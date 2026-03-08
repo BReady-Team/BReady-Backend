@@ -38,4 +38,8 @@ public class UserProfile {
     public void changeBio(String bio) {
         this.bio = bio;
     }
+
+    public void changeProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
 }
