@@ -3,6 +3,7 @@ package com.bready.server.auth.service;
 import com.bready.server.auth.domain.RefreshToken;
 import com.bready.server.auth.dto.TokenResponse;
 import com.bready.server.auth.repository.RefreshTokenRepository;
+import com.bready.server.global.config.security.jwt.JwtProperties;
 import com.bready.server.global.config.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class TokenIssuer {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProperties jwtProperties;
     private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenResponse issue(Long userId) {
@@ -24,6 +26,7 @@ public class TokenIssuer {
                         .key(String.valueOf(userId))
                         .token(refreshToken)
                         .userId(userId)
+                        .ttl(jwtProperties.getRefreshExp() / 1000)
                         .build()
         );
 
