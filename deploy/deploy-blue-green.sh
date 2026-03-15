@@ -53,7 +53,7 @@ echo "[STEP 3] Wait until target app is healthy"
 for i in $(seq 1 30); do
   HEALTH_RESPONSE=$(curl -s "http://127.0.0.1:${TARGET_PORT}${HEALTH_ENDPOINT}" || true)
 
-  if echo "$HEALTH_RESPONSE" | grep -q '"status":"UP"'; then
+  if echo "$HEALTH_RESPONSE" | grep -q '"status".*"UP"'; then
     echo "[INFO] Health check passed"
     break
   fi
