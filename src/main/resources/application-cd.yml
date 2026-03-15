@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # 안정화 후 validate로 변경
+      ddl-auto: update  # 안정화 후 validate 변경
     open-in-view: false
 
   data:
@@ -18,6 +18,17 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
 
 jwt:
   secret: ${JWT_SECRET}
