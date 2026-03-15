@@ -33,19 +33,23 @@ else
   OLD_COMPOSE=$GREEN_COMPOSE
 fi
 
-echo "=============================="
+TARGET_PROJECT="bready-${TARGET_COLOR}"
+OLD_PROJECT="bready-${OLD_COLOR}"
+
+echo "================================"
 echo "[INFO] CURRENT_COLOR = $CURRENT_COLOR"
 echo "[INFO] TARGET_COLOR  = $TARGET_COLOR"
 echo "[INFO] TARGET_PORT   = $TARGET_PORT"
-echo "=============================="
+echo "================================"
 
 echo "[STEP 1] Pull target image"
-docker compose -f "$TARGET_COMPOSE" --env-file .env pull
+docker compose -p "$TARGET_PROJECT" -f "$TARGET_COMPOSE" --env-file .env pull
 
 echo "[STEP 2] Start target container"
-docker compose -f "$TARGET_COMPOSE" --env-file .env up -d
+docker compose -p "$TARGET_PROJECT" -f "$TARGET_COMPOSE" --env-file .env up -d --remove-orphans
 
 echo "[STEP 3] Wait until target app is healthy"
+
 for i in $(seq 1 30); do
   HEALTH_RESPONSE=$(curl -s "http://127.0.0.1:${TARGET_PORT}${HEALTH_ENDPOINT}" || true)
 
@@ -57,7 +61,7 @@ for i in $(seq 1 30); do
   if [ "$i" -eq 30 ]; then
     echo "[ERROR] Health check failed after maximum retries"
     echo "[INFO] Target container logs:"
-    docker compose -f "$TARGET_COMPOSE" --env-file .env logs --tail=100
+    docker compose -p "$TARGET_PROJECT" -f "$TARGET_COMPOSE" --env-file .env logs --tail=100
     exit 1
   fi
 
@@ -66,6 +70,7 @@ for i in $(seq 1 30); do
 done
 
 echo "[STEP 4] Switch nginx upstream to ${TARGET_PORT}"
+
 sudo sed -i "s/server 127.0.0.1:[0-9]\+;/server 127.0.0.1:${TARGET_PORT};/" "$NGINX_CONF"
 
 echo "[STEP 5] Validate nginx config"
@@ -78,11 +83,13 @@ echo "$TARGET_COLOR" > "$ACTIVE_FILE"
 echo "[INFO] Active color changed to $TARGET_COLOR"
 
 echo "[STEP 7] Stop old container ($OLD_COLOR)"
-docker compose -f "$OLD_COMPOSE" --env-file .env stop || true
-docker compose -f "$OLD_COMPOSE" --env-file .env rm -f || true
 
-echo "[STEP 8] Prune dangling images"
+docker compose -p "$OLD_PROJECT" -f "$OLD_COMPOSE" --env-file .env stop || true
+docker compose -p "$OLD_PROJECT" -f "$OLD_COMPOSE" --env-file .env rm -f || true
+
+echo "[STEP 8] Cleanup dangling images"
 docker image prune -f
 
-echo "[SUCCESS] Blue-Green deployment completed successfully"
+echo "[SUCCESS] Blue-Green deployment completed"
+
 
