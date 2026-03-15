@@ -10,8 +10,7 @@ permissions:
 jobs:
   build-push-deploy:
     runs-on: ubuntu-latest
-    env:
-      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,12 +35,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image (GHCR)
+      - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/bready-team/bready-backend:latest
+          tags: |
+            ghcr.io/bready-team/bready-backend:latest
+            ghcr.io/bready-team/bready-backend:${{ github.sha }}
 
       - name: Ensure deploy directory exists
         uses: appleboy/ssh-action@v1.2.0
@@ -49,36 +50,37 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: mkdir -p /home/ubuntu/bready
+          script: |
+            mkdir -p /home/ubuntu/bready
 
-      - name: Upload docker-compose file to EC2
+      - name: Upload deployment files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose-prod.yml"
+          source: "docker-compose-infra.yml,docker-compose-blue.yml,docker-compose-green.yml,deploy-blue-green.sh,rollback-blue-green.sh"
           target: "/home/ubuntu/bready/"
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH (blue-green)
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: GHCR_TOKEN
+          envs: GHCR_USERNAME,GHCR_TOKEN
           script: |
             set -e
-            mkdir -p /home/ubuntu/bready
             cd /home/ubuntu/bready
-            
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             cat > .env << 'EOF'
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            
+
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
 
@@ -86,7 +88,7 @@ jobs:
             REDIS_PORT=${{ secrets.REDIS_PORT }}
 
             JWT_SECRET=${{ secrets.JWT_SECRET }}
-            
+
             KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}
 
             KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
@@ -96,20 +98,22 @@ jobs:
             NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
             NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
             NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
-            
+
             CLOUD_AWS_REGION=${{ secrets.AWS_REGION }}
             CLOUD_AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
             CLOUD_AWS_S3_PUBLIC_PREFIX=${{ secrets.AWS_S3_PREFIX }}
             CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
             CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
-            
+
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            
             EOF
-            
+
             chmod 600 .env
+            chmod +x deploy-blue-green.sh
+            chmod +x rollback-blue-green.sh
 
-            docker compose -f docker-compose-prod.yml --env-file .env pull
-            docker compose -f docker-compose-prod.yml --env-file .env up -d
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
-            docker image prune -f
+            docker compose -f docker-compose-infra.yml --env-file .env up -d
+
+            ./deploy-blue-green.sh
