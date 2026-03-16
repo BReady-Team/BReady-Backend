@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
@@ -41,7 +42,7 @@ public class UserService {
         String joinedAt = user.getCreatedAt() == null
                 ? null
                 : user.getCreatedAt()
-                .atOffset(ZoneOffset.UTC)
+                .atZone(ZoneId.of("Asia/Seoul"))
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         return UserProfileDto.builder()
