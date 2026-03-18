@@ -1,6 +1,7 @@
 package com.bready.server.global.exception;
 
 import com.bready.server.global.response.CommonResponse;
+import com.bready.server.s3.exception.S3ErrorCase;
 import com.bready.server.stats.exception.StatsErrorCase;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -147,5 +149,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(CommonResponse.error(400, "요청 값이 유효하지 않습니다."));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<CommonResponse<?>> handleMissingPart(
+            MissingServletRequestPartException e
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(CommonResponse.error(S3ErrorCase.FILE_REQUIRED.getErrorCode(), S3ErrorCase.FILE_REQUIRED.getMessage()));
     }
 }
