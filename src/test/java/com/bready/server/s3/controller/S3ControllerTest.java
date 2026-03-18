@@ -1,6 +1,5 @@
-package com.bready.server.s3;
+package com.bready.server.s3.controller;
 
-import com.bready.server.s3.controller.S3Controller;
 import com.bready.server.s3.service.S3Uploader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
