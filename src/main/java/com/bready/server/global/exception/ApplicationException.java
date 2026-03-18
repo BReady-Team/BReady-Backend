@@ -20,4 +20,12 @@ public class ApplicationException extends RuntimeException {
     public static ApplicationException from(ErrorCase errorCase) {
         return new ApplicationException(errorCase);
     }
+
+    public Integer getErrorCode() {
+        return errorCase.getErrorCode();
+    }
+
+    public Integer getHttpStatusCode() {
+        return errorCase.getHttpStatusCode();
+    }
 }

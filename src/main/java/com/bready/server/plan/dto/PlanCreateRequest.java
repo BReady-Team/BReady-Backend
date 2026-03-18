@@ -17,4 +17,10 @@ public class PlanCreateRequest {
 
     @NotBlank(message = "지역 정보를 입력해주세요.")
     private String region;
+
+    public PlanCreateRequest(String title, LocalDate planDate, String region) {
+        this.title = title;
+        this.planDate = planDate;
+        this.region = region;
+    }
 }
