@@ -7,6 +7,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
@@ -30,8 +31,12 @@ public class TestConfig implements WebMvcConfigurer {
                     NativeWebRequest webRequest,
                     WebDataBinderFactory binderFactory
             ) {
-                return 1L; // 항상 userId 1로 고정
+                return 1L;
             }
         });
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
     }
 }
