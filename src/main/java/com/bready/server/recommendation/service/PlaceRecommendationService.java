@@ -41,7 +41,7 @@ public class PlaceRecommendationService {
     public PlaceRecommendationResponse recommendPlaces(Long userId, PlaceRecommendationRequest request, PlaceRecommendationQuery query) {
 
         // trigger 존재 검증
-        Trigger trigger = triggerRepository.findById(request.triggerId())
+        Trigger trigger = triggerRepository.findByIdAndDeletedAtIsNull(request.triggerId())
                 .orElseThrow(() -> new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND));
 
         // plan 존재 + 소유 검증
