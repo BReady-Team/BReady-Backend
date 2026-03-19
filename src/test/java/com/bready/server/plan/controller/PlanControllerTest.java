@@ -109,7 +109,8 @@ class PlanControllerTest {
         mockMvc.perform(post("/api/v1/plans")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value(4001));
     }
 
     @Test

@@ -1,11 +1,13 @@
 package com.bready.server.s3.controller;
 
+import com.bready.server.global.exception.GlobalExceptionHandler;
 import com.bready.server.s3.service.S3Uploader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(S3Controller.class)
+@Import(GlobalExceptionHandler.class)
 @AutoConfigureMockMvc(addFilters = false)
 class S3ControllerTest {
 
@@ -60,7 +63,8 @@ class S3ControllerTest {
     @DisplayName("파일 없음 → 400")
     void upload_fail_no_file() throws Exception {
         mockMvc.perform(multipart("/api/v1/files/upload"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value(14006));
     }
 
     @Test

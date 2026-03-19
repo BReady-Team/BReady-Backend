@@ -21,6 +21,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import static org.springframework.http.ResponseEntity.status;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,8 +30,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<CommonResponse<?>> handleApplicationException(ApplicationException e) {
         log.warn("[ApplicationException] {}", e.getMessage());
-        return ResponseEntity
-                .status(e.getErrorCase().getHttpStatusCode())
+        return status(e.getErrorCase().getHttpStatusCode())
                 .body(CommonResponse.error(e.getErrorCase()));
     }
 
@@ -43,8 +44,7 @@ public class GlobalExceptionHandler {
                 .orElse("요청 값이 유효하지 않습니다.");
 
         log.warn("[ValidationException] {}", message);
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return status(HttpStatus.BAD_REQUEST)
                 .body(CommonResponse.error(4001, message));
     }
 
@@ -60,35 +60,30 @@ public class GlobalExceptionHandler {
             log.warn("[HttpMessageNotReadable] {}", e.getMessage());
 
             if ("planDate".equals(fieldName)) {
-                return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
+                return status(HttpStatus.BAD_REQUEST)
                         .body(CommonResponse.error(4006, "planDate 형식이 올바르지 않습니다."));
             }
 
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+            return status(HttpStatus.BAD_REQUEST)
                     .body(CommonResponse.error(4001, "요청 값이 유효하지 않습니다."));
         }
 
         log.warn("[HttpMessageNotReadable] {}", e.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return status(HttpStatus.BAD_REQUEST)
                 .body(CommonResponse.error(4001, "요청 값이 유효하지 않습니다."));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<CommonResponse<?>> handleAuthenticationException(AuthenticationException e) {
         log.warn("[AuthenticationException] {}", e.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+        return status(HttpStatus.UNAUTHORIZED)
                 .body(CommonResponse.error(401, "로그인이 필요합니다."));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<CommonResponse<?>> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         log.warn("[MethodNotAllowed] {}", e.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.METHOD_NOT_ALLOWED)
+        return status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(CommonResponse.error(405, "허용되지 않은 HTTP 메소드입니다."));
     }
 
@@ -102,8 +97,7 @@ public class GlobalExceptionHandler {
                 e.getMessage()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+        return status(HttpStatus.NOT_FOUND)
                 .body(CommonResponse.error(404, "요청하신 리소스를 찾을 수 없습니다."));
     }
 
@@ -118,13 +112,12 @@ public class GlobalExceptionHandler {
         }
 
         log.error("[UnexpectedException]", e);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonResponse.error(500, "서버 내부 오류가 발생했습니다."));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public CommonResponse<?> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<CommonResponse<?>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
 
         if ("period".equals(e.getName())) {
             throw ApplicationException.from(StatsErrorCase.INVALID_PERIOD);
@@ -136,6 +129,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<CommonResponse<?>> handleMissingServletRequestParameterException(
             MissingServletRequestParameterException e) {
+        log.warn("[MissingServletRequestParameterException] parameter={}", e.getParameterName());
 
         return ResponseEntity
                 .badRequest()
@@ -145,7 +139,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<CommonResponse<?>> handleConstraintViolationException(
             ConstraintViolationException e) {
-
+        log.warn("[ConstraintViolationException] {}", e.getMessage());
         return ResponseEntity
                 .badRequest()
                 .body(CommonResponse.error(400, "요청 값이 유효하지 않습니다."));
@@ -155,8 +149,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonResponse<?>> handleMissingPart(
             MissingServletRequestPartException e
     ) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(CommonResponse.error(S3ErrorCase.FILE_REQUIRED.getErrorCode(), S3ErrorCase.FILE_REQUIRED.getMessage()));
+        log.warn("[MissingServletRequestPartException] partName={}", e.getRequestPartName());
+
+        // S3 파일 업로드 관련 part인 경우
+        if ("file".equals(e.getRequestPartName())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(CommonResponse.error(S3ErrorCase.FILE_REQUIRED));
+        }
+
+        // 그 외 일반적인 multipart 누락
+        return status(HttpStatus.BAD_REQUEST)
+                .body(CommonResponse.error(400, "필수 요청 파트가 누락되었습니다: " + e.getRequestPartName()));
     }
 }
