@@ -3,10 +3,12 @@ package com.bready.server.plan.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Getter
+@NoArgsConstructor
 public class PlanCreateRequest {
 
     @NotBlank(message = "플랜 제목을 입력해주세요.")
@@ -17,4 +19,10 @@ public class PlanCreateRequest {
 
     @NotBlank(message = "지역 정보를 입력해주세요.")
     private String region;
+
+    public PlanCreateRequest(String title, LocalDate planDate, String region) {
+        this.title = title;
+        this.planDate = planDate;
+        this.region = region;
+    }
 }

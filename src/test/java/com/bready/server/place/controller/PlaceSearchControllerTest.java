@@ -92,4 +92,37 @@ class PlaceSearchControllerTest {
                 .andExpect(jsonPath("$.errorCode")
                         .value(PlaceErrorCase.PLACE_NOT_FOUND.getErrorCode()));
     }
+
+    @Test
+    @DisplayName("category 누락 → 400")
+    void search_category_missing() throws Exception {
+
+        mockMvc.perform(get("/api/v1/places/search")
+                        .param("latitude", "37.544")
+                        .param("longitude", "127.055"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("radius 범위 초과 → 400")
+    void search_radius_invalid() throws Exception {
+
+        mockMvc.perform(get("/api/v1/places/search")
+                        .param("category", "CAFE")
+                        .param("latitude", "37.544")
+                        .param("longitude", "127.055")
+                        .param("radius", "20000"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("위도 범위 초과 → 400")
+    void search_latitude_invalid() throws Exception {
+
+        mockMvc.perform(get("/api/v1/places/search")
+                        .param("category", "CAFE")
+                        .param("latitude", "200")
+                        .param("longitude", "127"))
+                .andExpect(status().isBadRequest());
+    }
 }
