@@ -7,11 +7,8 @@ import com.bready.server.place.repository.PlaceCandidateRepository;
 import com.bready.server.plan.domain.CategoryState;
 import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
-import com.bready.server.plan.exception.CategoryErrorCase;
 import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.CategoryStateRepository;
-import com.bready.server.plan.repository.PlanCategoryRepository;
-import com.bready.server.plan.repository.PlanRepository;
 import com.bready.server.recommendation.dto.PlaceRecommendationQuery;
 import com.bready.server.recommendation.dto.PlaceRecommendationRequest;
 import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
@@ -35,8 +32,6 @@ public class PlaceRecommendationService {
     private static final int MAX_SIZE = 20;
     private static final int DEFAULT_RADIUS = 2000;
 
-    private final PlanRepository planRepository;
-    private final PlanCategoryRepository planCategoryRepository;
     private final TriggerRepository triggerRepository;
     private final PlaceCandidateRepository placeCandidateRepository;
     private final CategoryStateRepository categoryStateRepository;
@@ -45,28 +40,17 @@ public class PlaceRecommendationService {
     @Transactional(readOnly = true)
     public PlaceRecommendationResponse recommendPlaces(Long userId, PlaceRecommendationRequest request, PlaceRecommendationQuery query) {
 
-        // plan 존재 + 소유 검증
-        Plan plan = planRepository.findByIdAndDeletedAtIsNull(request.planId())
-                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+        // trigger 존재 검증
+        Trigger trigger = triggerRepository.findByIdAndDeletedAtIsNull(request.triggerId())
+                .orElseThrow(() -> new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND));
 
+        // plan 존재 + 소유 검증
+        Plan plan = trigger.getPlan();
         if (!plan.getOwnerId().equals(userId)) {
             throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
         }
 
-        // category 존재 + plan 매칭 검증
-        PlanCategory category = planCategoryRepository.findByIdAndPlan_IdAndDeletedAtIsNull(request.categoryId(), request.planId())
-                .orElseThrow(() -> new ApplicationException(CategoryErrorCase.CATEGORY_NOT_FOUND));
-
-        // trigger 존재 검증
-        Trigger trigger = triggerRepository.findById(request.triggerId())
-                .orElseThrow(() -> new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND));
-
-        if (!trigger.getPlan().getId().equals(request.planId())) {
-            throw new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND);
-        }
-        if (!trigger.getCategory().getId().equals(request.categoryId())) {
-            throw new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND);
-        }
+        PlanCategory category = trigger.getCategory();
 
         if (trigger.getTriggerType() == TriggerType.WEATHER_BAD && !category.getCategoryType().isIndoor()) {
             return new PlaceRecommendationResponse(List.of());
@@ -79,6 +63,7 @@ public class PlaceRecommendationService {
 
         String region = firstNonBlank(
                 normalizeRegion(query.region()),
+                normalizeRegion(plan.getRegion()),
                 normalizeRegion(resolved.region())
         );
 
@@ -161,9 +146,10 @@ public class PlaceRecommendationService {
         return Math.max(1, Math.min(size, MAX_SIZE));
     }
 
-    private String firstNonBlank(String a, String b) {
+    private String firstNonBlank(String a, String b, String c) {
         if (a != null && !a.isBlank()) return a;
         if (b != null && !b.isBlank()) return b;
+        if (c != null && !c.isBlank()) return c;
         return null;
     }
 

@@ -17,6 +17,7 @@ public class UserProfile {
 
     private String nickname;
 
+    @Column(length = 255)
     private String bio;
 
     private String profileImageUrl;

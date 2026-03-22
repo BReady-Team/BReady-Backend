@@ -32,8 +32,8 @@ management:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-exp: 1800000
-  refresh-exp: 1209600000
+  access-exp: 3600000
+  refresh-exp: 2592000000
 
 kakao:
   rest-api-key: ${KAKAO_REST_API_KEY}
