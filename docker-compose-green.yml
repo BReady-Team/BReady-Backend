@@ -38,3 +38,8 @@ services:
       CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
 
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+networks:
+  default:
+    external: true
+    name: bready_default
