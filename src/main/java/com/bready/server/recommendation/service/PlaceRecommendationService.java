@@ -62,9 +62,9 @@ public class PlaceRecommendationService {
         ResolvedBase resolved = resolveBase(trigger.getTriggerType(), category.getId(), query);
 
         String region = firstNonBlank(
+                normalizeRegion(resolved.region()),
                 normalizeRegion(query.region()),
-                normalizeRegion(plan.getRegion()),
-                normalizeRegion(resolved.region())
+                normalizeRegion(plan.getRegion())
         );
 
         Coordinate base = resolved.coordinate();
