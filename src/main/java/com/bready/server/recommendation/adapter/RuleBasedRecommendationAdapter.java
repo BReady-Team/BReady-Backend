@@ -1,7 +1,9 @@
 package com.bready.server.recommendation.adapter;
 
+import com.bready.server.global.exception.ApplicationException;
 import com.bready.server.place.domain.PlaceCategoryType;
 import com.bready.server.place.dto.PlaceSearchResponse;
+import com.bready.server.place.exception.PlaceErrorCase;
 import com.bready.server.place.service.PlaceSearchService;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
@@ -11,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Component
 @RequiredArgsConstructor
@@ -35,13 +35,22 @@ public class RuleBasedRecommendationAdapter implements PlaceRecommendationPort {
         PlaceCategoryType categoryType = category.getCategoryType();
         String keyword = normalizedRegion(region);
 
-        List<PlaceSearchResponse> candidates = placeSearchService.search(
-                categoryType,
-                keyword,
-                latitude,
-                longitude,
-                radius
-        );
+        List<PlaceSearchResponse> candidates;
+
+        try {
+            candidates = placeSearchService.search(
+                    categoryType,
+                    keyword,
+                    latitude,
+                    longitude,
+                    radius
+            );
+        } catch (ApplicationException e) {
+            if (e.getErrorCase().getErrorCode().equals(PlaceErrorCase.PLACE_NOT_FOUND.getErrorCode())) {
+                return List.of();
+            }
+            throw e;
+        }
 
         if (candidates == null || candidates.isEmpty()) {
             return List.of();
