@@ -92,12 +92,11 @@ public class PlaceRecommendationService {
 
         // trigger 중 현재 위치 기반으로 탐색해야 하는 trigger
         if (triggerType == TriggerType.FATIGUE || triggerType == TriggerType.DISTANCE_TOO_FAR) {
-            if (query.latitude() == null || query.longitude() == null) {
-                throw new ApplicationException(PlaceErrorCase.LOCATION_REQUIRED);
+            if (query.latitude() != null && query.longitude() != null) {
+                return new ResolvedBase(
+                        new Coordinate(query.latitude(), query.longitude()), null, null
+                );
             }
-            return new ResolvedBase(
-                    new Coordinate(query.latitude(), query.longitude()), null, null
-            );
         }
 
         CategoryState state = categoryStateRepository.findByCategory_Id(categoryId)
