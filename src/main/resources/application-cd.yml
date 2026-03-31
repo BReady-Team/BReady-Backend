@@ -52,3 +52,5 @@ cloud:
 recommendation:
   ai:
     enabled: true
+    cache:
+      place-ttl-seconds: 180
