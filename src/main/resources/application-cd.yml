@@ -54,3 +54,4 @@ recommendation:
     enabled: true
     cache:
       place-ttl-seconds: 180
+      category-ttl-seconds: 300
