@@ -1,6 +1,8 @@
 package com.bready.server.recommendation.cache;
 
 import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +18,7 @@ import java.util.List;
 public class PlaceRecommendationCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${recommendation.ai.cache.place-ttl-seconds:180}")
     private long placeCacheTtlSeconds;
@@ -31,13 +34,17 @@ public class PlaceRecommendationCacheService {
     }
 
     // 캐시 조회
-    @SuppressWarnings("unchecked")
     public List<PlaceRecommendationResponse.RecommendationItem> get(String key) {
         Object value = redisTemplate.opsForValue().get(key);
-        if (value instanceof List<?>) {
-            return (List<PlaceRecommendationResponse.RecommendationItem>) value;
+
+        if (value == null) {
+            return null;
         }
-        return null;
+
+        return objectMapper.convertValue(
+                value,
+                new TypeReference<List<PlaceRecommendationResponse.RecommendationItem>>() {}
+        );
     }
 
     // 캐시 저장
