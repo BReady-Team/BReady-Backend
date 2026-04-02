@@ -9,6 +9,7 @@ import com.bready.server.plan.domain.Plan;
 import com.bready.server.plan.domain.PlanCategory;
 import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.CategoryStateRepository;
+import com.bready.server.recommendation.cache.PlaceRecommendationCacheService;
 import com.bready.server.recommendation.dto.PlaceRecommendationQuery;
 import com.bready.server.recommendation.dto.PlaceRecommendationRequest;
 import com.bready.server.recommendation.dto.PlaceRecommendationResponse;
@@ -18,12 +19,14 @@ import com.bready.server.trigger.domain.TriggerType;
 import com.bready.server.trigger.exception.TriggerErrorCase;
 import com.bready.server.trigger.repository.TriggerRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlaceRecommendationService {
@@ -36,13 +39,18 @@ public class PlaceRecommendationService {
     private final PlaceCandidateRepository placeCandidateRepository;
     private final CategoryStateRepository categoryStateRepository;
     private final PlaceRecommendationPort placeRecommendationPort;
+    private final PlaceRecommendationCacheService placeRecommendationCacheService;
 
     @Transactional(readOnly = true)
     public PlaceRecommendationResponse recommendPlaces(Long userId, PlaceRecommendationRequest request, PlaceRecommendationQuery query) {
 
+        long start = System.currentTimeMillis();
+
         // trigger 존재 검증
         Trigger trigger = triggerRepository.findByIdAndDeletedAtIsNull(request.triggerId())
                 .orElseThrow(() -> new ApplicationException(TriggerErrorCase.TRIGGER_NOT_FOUND));
+
+        long t1 = System.currentTimeMillis();
 
         // plan 존재 + 소유 검증
         Plan plan = trigger.getPlan();
@@ -60,6 +68,7 @@ public class PlaceRecommendationService {
         int radius = (query.radius() != null) ? query.radius() : DEFAULT_RADIUS;
 
         ResolvedBase resolved = resolveBase(trigger.getTriggerType(), category.getId(), query);
+        long t2 = System.currentTimeMillis();
 
         String region = firstNonBlank(
                 normalizeRegion(resolved.region()),
@@ -69,6 +78,25 @@ public class PlaceRecommendationService {
 
         Coordinate base = resolved.coordinate();
 
+        // 캐시 key 생성
+        String cacheKey = placeRecommendationCacheService.generateKey(
+                category.getCategoryType().name(),
+                base.latitude,
+                base.longitude
+        );
+
+        // 캐시 조회
+        List<PlaceRecommendationResponse.RecommendationItem> cachedItems =
+                placeRecommendationCacheService.get(cacheKey);
+
+        // 캐시 HIT
+        if (cachedItems != null && !cachedItems.isEmpty()) {
+            long cachedHitTime = System.currentTimeMillis();
+            log.info("placeReco cacheHit total={}ms, key={}", cachedHitTime - start, cacheKey);
+            return new PlaceRecommendationResponse(cachedItems);
+        }
+
+        // 캐시 MISS
         List<PlaceRecommendationResponse.RecommendationItem> items =
                 placeRecommendationPort.recommendPlaceCandidates(
                         category,
@@ -81,9 +109,16 @@ public class PlaceRecommendationService {
                         resolved.excludeExternalId()
                 );
 
+        long t3 = System.currentTimeMillis();
+
         if (items.isEmpty()) {
             return new PlaceRecommendationResponse(List.of());
         }
+
+        placeRecommendationCacheService.put(cacheKey, items);
+
+        log.info("placeReco validate={}ms, resolveBase={}ms, portCall={}ms, total={}ms",
+                t1 - start, t2 - t1, t3 - t2, t3 - start);
 
         return new PlaceRecommendationResponse(items);
     }
