@@ -48,6 +48,8 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     // 조회용 - 락 없음
     Optional<Plan> findByIdAndDeletedAtIsNull(Long id);
 
+    Optional<Plan> findByShareTokenAndDeletedAtIsNull(String shareToken);
+
     @Query(value = """
     SELECT
         p.id as planId,
