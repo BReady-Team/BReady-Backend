@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/v1/plans")
@@ -121,13 +120,7 @@ public class PlanController {
             @PathVariable Long planId
     ) {
         String shareToken = planService.getOrCreateShareToken(userId, planId);
-
-        String shareUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/shared/plans/")
-                .path(shareToken)
-                .toUriString();
-
-        return CommonResponse.success(shareUrl);
+        return CommonResponse.success(shareToken);
     }
 
 
