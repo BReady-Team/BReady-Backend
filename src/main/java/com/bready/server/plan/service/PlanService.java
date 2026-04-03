@@ -74,17 +74,21 @@ public class PlanService {
             throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
         }
 
-        PlanDto planDto = PlanDto.builder()
-                .planId(plan.getId())
-                .title(plan.getTitle())
-                .planDate(plan.getPlanDate())
-                .region(plan.getRegion())
-                .status(plan.getStatus())
-                .createdAt(plan.getCreatedAt())
-                .updatedAt(plan.getUpdatedAt())
-                .build();
+        return buildPlanDetailResponse(plan);
+    }
 
-        List<PlanCategory> categories = planCategoryRepository.findAllDetailByPlanId(planId);
+    @Transactional(readOnly = true)
+    public PlanDetailResponse getSharedPlanDetail(String shareToken) {
+        Plan plan = planRepository.findByShareTokenAndDeletedAtIsNull(shareToken)
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        return buildPlanDetailResponse(plan);
+    }
+
+    private PlanDetailResponse buildPlanDetailResponse(Plan plan) {
+        PlanDto planDto = buildPlanDto(plan);
+
+        List<PlanCategory> categories = planCategoryRepository.findAllDetailByPlanId(plan.getId());
 
         if (categories.isEmpty()) {
             return PlanDetailResponse.builder()
@@ -97,53 +101,68 @@ public class PlanService {
                 .map(PlanCategory::getId)
                 .toList();
 
-        Map<Long, Long> representativeMap =
-                categoryStateRepository.findAllByCategory_IdIn(categoryIds)
-                        .stream()
-                        .filter(cs -> cs.getCurrentCandidateId() != null)
-                        .collect(Collectors.toMap(
-                                cs -> cs.getCategory().getId(),
-                                CategoryState::getCurrentCandidateId
-                        ));
+        Map<Long, Long> representativeMap = categoryStateRepository.findAllByCategory_IdIn(categoryIds)
+                .stream()
+                .filter(cs -> cs.getCurrentCandidateId() != null)
+                .collect(Collectors.toMap(
+                        cs -> cs.getCategory().getId(),
+                        CategoryState::getCurrentCandidateId
+                ));
 
         List<PlanDetailCategoryDto> categoryDtos = categories.stream()
-                .map(category-> {
-                    Long representativeId = representativeMap.get(category.getId());
-
-                    List<PlanDetailCandidateDto> candidateDtos =
-                            category.getCandidates().stream()
-                                    .sorted((a,b) -> Long.compare(b.getId(), a.getId()))
-                                    .map(candidate -> {
-                                        boolean isRep = representativeId != null && representativeId.equals(candidate.getId());
-
-                                        return PlanDetailCandidateDto.builder()
-                                                .candidateId(candidate.getId())
-                                                .isRepresentative(isRep)
-                                                .place(PlanDetailPlaceDto.builder()
-                                                        .id(candidate.getPlace().getId())
-                                                        .externalId(candidate.getPlace().getExternalId())
-                                                        .name(candidate.getPlace().getName())
-                                                        .address(candidate.getPlace().getAddress())
-                                                        .latitude(candidate.getPlace().getLatitude())
-                                                        .longitude(candidate.getPlace().getLongitude())
-                                                        .isIndoor(candidate.getPlace().getIsIndoor())
-                                                        .build())
-                                                .build();
-                                    }).toList();
-                    return PlanDetailCategoryDto.builder()
-                            .planCategoryId(category.getId())
-                            .categoryType(category.getCategoryType())
-                            .sequence(category.getSequence())
-                            .representativeCandidateId(representativeId)
-                            .candidates(candidateDtos)
-                            .build();
-                }).toList();
+                .map(category -> buildCategoryDto(category, representativeMap.get(category.getId())))
+                .toList();
 
         return PlanDetailResponse.builder()
                 .plan(planDto)
                 .categories(categoryDtos)
                 .build();
     }
+
+
+    private PlanDto buildPlanDto(Plan plan) {
+        return PlanDto.builder()
+                .planId(plan.getId())
+                .title(plan.getTitle())
+                .planDate(plan.getPlanDate())
+                .region(plan.getRegion())
+                .status(plan.getStatus())
+                .createdAt(plan.getCreatedAt())
+                .updatedAt(plan.getUpdatedAt())
+                .build();
+    }
+
+    private PlanDetailCategoryDto buildCategoryDto(PlanCategory category, Long representativeId) {
+        List<PlanDetailCandidateDto> candidateDtos = category.getCandidates().stream()
+                .sorted((a, b) -> Long.compare(b.getId(), a.getId()))
+                .map(candidate -> {
+                    boolean isRep = representativeId != null && representativeId.equals(candidate.getId());
+
+                    return PlanDetailCandidateDto.builder()
+                            .candidateId(candidate.getId())
+                            .isRepresentative(isRep)
+                            .place(PlanDetailPlaceDto.builder()
+                                    .id(candidate.getPlace().getId())
+                                    .externalId(candidate.getPlace().getExternalId())
+                                    .name(candidate.getPlace().getName())
+                                    .address(candidate.getPlace().getAddress())
+                                    .latitude(candidate.getPlace().getLatitude())
+                                    .longitude(candidate.getPlace().getLongitude())
+                                    .isIndoor(candidate.getPlace().getIsIndoor())
+                                    .build())
+                            .build();
+                })
+                .toList();
+
+        return PlanDetailCategoryDto.builder()
+                .planCategoryId(category.getId())
+                .categoryType(category.getCategoryType())
+                .sequence(category.getSequence())
+                .representativeCandidateId(representativeId)
+                .candidates(candidateDtos)
+                .build();
+    }
+
 
     @Transactional(readOnly = true)
     public PlanListResponse getMyPlans(Long userId, int page, int size, SortDirection order) {
