@@ -9,6 +9,9 @@ import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
+import com.bready.server.user.domain.User;
+import com.bready.server.user.domain.UserProfile;
+import com.bready.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +32,7 @@ public class PlanService {
     private final PlanRepository planRepository;
     private final PlanCategoryRepository planCategoryRepository;
     private final CategoryStateRepository categoryStateRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public PlanCreateResponse createPlan(Long userId, PlanCreateRequest request) {
@@ -121,12 +125,22 @@ public class PlanService {
 
 
     private PlanDto buildPlanDto(Plan plan) {
+        User user = userRepository.findByIdWithProfile(plan.getOwnerId())
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        UserProfile profile = user.getUserProfile();
+
+        String ownerNickname = profile != null ? profile.getNickname() : "사용자";
+        String ownerProfileImageUrl = profile != null ? profile.getProfileImageUrl() : null;
+
         return PlanDto.builder()
                 .planId(plan.getId())
                 .title(plan.getTitle())
                 .planDate(plan.getPlanDate())
                 .region(plan.getRegion())
                 .status(plan.getStatus())
+                .ownerNickname(ownerNickname)
+                .ownerProfileImageUrl(ownerProfileImageUrl)
                 .createdAt(plan.getCreatedAt())
                 .updatedAt(plan.getUpdatedAt())
                 .build();
