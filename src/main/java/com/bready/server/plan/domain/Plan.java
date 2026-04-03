@@ -51,4 +51,8 @@ public class Plan extends BaseEntity {
         this.planDate = planDate;
         this.region = region;
     }
+
+    public void setShareToken(String shareToken) {
+        this.shareToken = shareToken;
+    }
 }

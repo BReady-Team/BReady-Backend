@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -193,5 +194,24 @@ public class PlanService {
                 .planId(plan.getId())
                 .deletedAt(plan.getDeletedAt())
                 .build();
+    }
+
+    @Transactional
+    public String getOrCreateShareToken(Long userId, Long planId) {
+        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
+                .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
+
+        if (!plan.getOwnerId().equals(userId)) {
+            throw new ApplicationException(PlanErrorCase.PLAN_ACCESS_DENIED);
+        }
+
+        if (plan.getShareToken() != null) {
+            return plan.getShareToken();
+        }
+
+        String token = UUID.randomUUID().toString().replace("-", "");
+        plan.setShareToken(token);
+
+        return token;
     }
 }
