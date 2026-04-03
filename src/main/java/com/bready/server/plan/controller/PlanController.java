@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/v1/plans")
@@ -99,6 +100,36 @@ public class PlanController {
         return CommonResponse.success(planService.getPlanDetail(userId, planId));
     }
 
+    @PostMapping("/{planId}/share")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "플랜 공유 링크 생성",
+            description = "플랜 소유자가 공유 링크를 생성하거나 기존 링크를 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공유 링크 생성 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 필요",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "403", description = "플랜 공유 권한 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "404", description = "플랜 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<String> createShareLink(
+            @CurrentUser Long userId,
+            @PathVariable Long planId
+    ) {
+        String shareToken = planService.getOrCreateShareToken(userId, planId);
+
+        String shareUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/shared/plans/")
+                .path(shareToken)
+                .toUriString();
+
+        return CommonResponse.success(shareUrl);
+    }
+
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -144,6 +175,24 @@ public class PlanController {
     })
     public CommonResponse<PlanDeleteResponse> deletePlan(@CurrentUser Long userId, @PathVariable Long planId) {
         return CommonResponse.success(planService.deletePlan(userId, planId));
+    }
+
+    @GetMapping("/shared/{shareToken}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "공유 플랜 상세 조회",
+            description = "공유 토큰으로 플랜 상세 정보를 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공유 플랜 조회 성공",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+            @ApiResponse(responseCode = "404", description = "공유 플랜 없음",
+                    content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    public CommonResponse<PlanDetailResponse> getSharedPlanDetail(
+            @PathVariable String shareToken
+    ) {
+        return CommonResponse.success(planService.getSharedPlanDetail(shareToken));
     }
 
 }
