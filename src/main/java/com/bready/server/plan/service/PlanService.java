@@ -231,7 +231,7 @@ public class PlanService {
 
     @Transactional
     public String getOrCreateShareToken(Long userId, Long planId) {
-        Plan plan = planRepository.findByIdAndDeletedAtIsNull(planId)
+        Plan plan = planRepository.findByIdAndDeletedAtIsNullForUpdate(planId)
                 .orElseThrow(() -> new ApplicationException(PlanErrorCase.PLAN_NOT_FOUND));
 
         if (!plan.getOwnerId().equals(userId)) {
