@@ -7,6 +7,9 @@ import com.bready.server.plan.exception.PlanErrorCase;
 import com.bready.server.plan.repository.CategoryStateRepository;
 import com.bready.server.plan.repository.PlanCategoryRepository;
 import com.bready.server.plan.repository.PlanRepository;
+import com.bready.server.user.domain.User;
+import com.bready.server.user.domain.UserProfile;
+import com.bready.server.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,9 @@ class PlanServiceTest {
 
     @Mock
     private CategoryStateRepository categoryStateRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private PlanService planService;
@@ -151,6 +157,15 @@ class PlanServiceTest {
         @DisplayName("카테고리 없음 → 빈 리스트 반환")
         void emptyCategories() {
             Plan plan = Plan.create(USER_ID, "title", LocalDate.now(), "서울");
+
+            User user = User.createLocal("test@test.com", "encoded-password");
+
+            UserProfile profile = UserProfile.create(user, "테스터");
+
+            profile.changeProfileImage(null);
+
+            given(userRepository.findByIdWithProfile(USER_ID))
+                    .willReturn(Optional.of(user));
 
             given(planRepository.findByIdAndDeletedAtIsNull(1L))
                     .willReturn(Optional.of(plan));
