@@ -15,6 +15,8 @@ public class PlanDto {
     private LocalDate planDate;
     private String region;
     private String status;
+    private String ownerNickname;
+    private String ownerProfileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
