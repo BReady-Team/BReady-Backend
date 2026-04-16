@@ -174,13 +174,13 @@
 
 ## ✨ 핵심 기능 소개
 
-### 🔐 랜딩 & 인증
+### 🔐 회원가입 & 로그인
 
 이메일/비밀번호 로그인과 카카오·네이버 소셜 로그인을 지원합니다.
 
-| 랜딩 페이지 | 로그인 |
+| 회원가입 | 로그인 |
 |:---:|:---:|
-| ![Landing](https://github.com/user-attachments/assets/e9f51fe0-9095-4b83-8bf0-0b56413c997b) | ![Login](https://github.com/user-attachments/assets/99f8a347-91e5-4c72-a0a6-6bdf11854a3c) |
+| ![Landing](https://github.com/user-attachments/assets/3a9a3323-d056-4906-9b55-8393be9b1f88) | ![Login](https://github.com/user-attachments/assets/99f8a347-91e5-4c72-a0a6-6bdf11854a3c) |
 
 ---
 
