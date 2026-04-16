@@ -384,6 +384,163 @@ WHERE period = :period
 ORDER BY switch_count DESC
 LIMIT :limit;
 ```
+---
+
+## 🔧 성능 개선
+
+### 1. 통계 API 성능 개선 — JOIN → LIMIT Push Down → Materialized View
+
+#### 📌 문제 상황
+
+통계 API(`GET /api/v1/stats/plans`)가 80 VUs 부하 환경에서 **완전히 응답 불가** 상태에 빠지는 현상이 확인되었습니다.
+
+```
+k6 결과 (JOIN, 80 VUs)
+─────────────────────────────────────
+p95          : 10s
+실패율       : 100% (493 / 493)
+─────────────────────────────────────
+HikariPool-1 - Connection is not available,
+request timed out after 30002ms
+(total=10, active=10, idle=0, waiting=2)
+```
+
+#### 🔍 원인 분석
+
+Hibernate SQL 로그 및 `EXPLAIN ANALYZE` 결과, 핵심 병목은 **50만 row가 생성된 이후 GROUP BY가 수행되는 구조**였습니다.
+
+```
+plans 전체 조회 (~2,000건)
+   ↓ LEFT JOIN triggers / decisions / switch_logs
+   ↓ ~50만 row 생성
+   ↓ GROUP BY
+   ↓ 정렬
+   ↓ LIMIT 10  ← LIMIT이 가장 마지막에 적용
+```
+
+```
+MySQL EXPLAIN ANALYZE
+─────────────────────────────────────
+Nested loop left join  (actual rows=501,000)
+Aggregate using temporary table  (actual time=4,990ms)
+Table scan on <temporary>
+```
+
+#### ✅ 1차 개선 — LIMIT Push Down (Native Query)
+
+서브쿼리로 먼저 `LIMIT 10`을 적용한 뒤 JOIN을 수행하도록 쿼리 구조를 변경했습니다.
+
+```sql
+-- Before: LIMIT이 GROUP BY 이후에 적용
+SELECT p.id, p.title, COUNT(sl.id)
+FROM plans p
+LEFT JOIN triggers t ON t.plan_id = p.id
+LEFT JOIN decisions d ON d.trigger_id = t.id
+LEFT JOIN switch_logs sl ON sl.decision_id = d.id
+WHERE p.owner_id = ?
+GROUP BY p.id
+ORDER BY p.plan_date DESC
+LIMIT 10;
+
+-- After: 서브쿼리로 LIMIT 먼저 적용
+SELECT p.id, p.title, COALESCE(COUNT(sl.id), 0)
+FROM (
+    SELECT id, title, plan_date, region
+    FROM plans
+    WHERE owner_id = ?
+    ORDER BY plan_date DESC
+    LIMIT 10
+) p
+LEFT JOIN triggers t ON t.plan_id = p.id
+LEFT JOIN decisions d ON d.trigger_id = t.id
+LEFT JOIN switch_logs sl ON sl.decision_id = d.id
+GROUP BY p.id, p.title, p.plan_date, p.region
+ORDER BY p.plan_date DESC;
+```
+
+```
+1차 개선 결과
+─────────────────────────────────────
+Before : 5,506ms
+After  :   138ms  → 약 40배 개선
+```
+
+#### ✅ 2차 개선 — Materialized View 패턴 도입
+
+1차 개선 후에도 부하 환경에서 **500ms ~ 2,000ms**의 변동이 남아 있었습니다.
+실시간 집계 구조 자체를 제거하고, **사전 계산된 통계 테이블(`plan_stats`)을 조회**하는 방식으로 전환했습니다.
+
+```
+설계 방식
+─────────────────────────────────────
+1. plan_stats 통계 테이블 생성
+2. 이벤트 기반 통계 갱신 구조
+3. @TransactionalEventListener 적용
+   → 트랜잭션 커밋 이후에만 통계 갱신
+4. @Async 비동기 처리
+```
+
+```
+2차 개선 결과 (동시 요청 상황)
+─────────────────────────────────────
+JOIN         : 1,843ms ~ 1,996ms
+Materialized :    19ms ~    21ms  → 약 95배 개선
+```
+
+#### 📊 k6 최종 비교 결과 (80 VUs)
+
+| 항목 | JOIN | Materialized View |
+|------|------|-------------------|
+| p95 응답시간 | 2,040ms | **< 200ms** |
+| 에러율 | 0% | 0% |
+| Threshold | ✅ PASS | ✅ PASS |
+
+---
+
+### 2. 추천 API 성능 개선 — Redis 캐시 도입
+
+#### 📌 문제 상황
+
+트리거 발생 시 호출되는 추천 API에서 **AI rerank 단계**가 전체 응답 지연의 대부분을 차지했습니다.
+
+```
+개선 전
+─────────────────────────────────────
+Category Recommendation : 3,646ms
+Place Recommendation    : 7,673ms
+```
+
+#### 🔍 원인 분석
+
+매 요청마다 OpenAI API를 호출해 AI rerank를 수행하는 구조로, 동일한 트리거·위치 조건의 반복 요청에도 AI 호출이 발생했습니다.
+
+#### ✅ 개선 — Redis 캐시 적용
+
+동일 조건의 요청은 Redis에서 즉시 반환하고, 캐시 미스 시에만 AI 호출을 수행하도록 변경했습니다.
+
+```
+캐시 키 설계
+─────────────────────────────────────
+Category 추천 : triggerId
+Place 추천    : category + lat/lng (소수점 반올림)
+
+적용 흐름
+─────────────────────────────────────
+요청 수신
+   ↓
+Redis 캐시 확인
+   ├── Cache Hit  → 즉시 반환
+   └── Cache Miss → AI 호출 후 결과 저장 → 반환
+```
+
+#### 📊 개선 결과
+
+| 항목 | 개선 전 | 개선 후 | 개선율 |
+|------|---------|---------|--------|
+| Category 추천 | 3,646ms | **21ms** | 약 174배 |
+| Place 추천 | 7,673ms | **29ms** | 약 264배 |
+
+---
 
 ### 📁 프로젝트 구조
 ```
